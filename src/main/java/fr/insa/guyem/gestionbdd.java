@@ -49,7 +49,7 @@ public class gestionbdd {
             System.out.println("7) placer  une enchere sur  un objet");
             System.out.println("8) liste des encheres");
             System.out.println("9) bilan utilisateur donné");
-
+            System.out.println("10) ajouter une categorie");
             System.out.println("0) quitter");
             System.out.println("Votre choix ?");
             rep = Lire.i();
@@ -103,7 +103,12 @@ public class gestionbdd {
                     System.out.println("entrer l'id de  l'utilisateur");
                     int uti = Lire.i();
                     Bilanutil(con, uti);
+                } else if (rep == 10) {
+                    System.out.println("entrer le nom de  la categorie :");
+                    String name = Lire.S();
+                    createcategorie(con,name);
                 }
+                
             } catch (SQLException ex) {
                 throw new Error(ex);
             }
@@ -562,4 +567,25 @@ public class gestionbdd {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
+    private static int createcategorie(Connection con ,String name) throws SQLException {
+        try ( PreparedStatement pst = con.prepareStatement(
+                """
+                insert into categorie (nom) values (?)
+                """, PreparedStatement.RETURN_GENERATED_KEYS)) {
+            pst.setString(1, name);
+            
+            pst.executeUpdate();
+
+            // je peux  alors récupérer les clés créées comme un result set :
+            try ( ResultSet rid = pst.getGeneratedKeys()) {
+                // et comme ici je suis sur qu'il y a une et une seule clé, je
+                // fait un simple next 
+                rid.next();
+                // puis je récupère la valeur de la clé créé qui est dans la
+                // première colonne du ResultSet
+                int id = rid.getInt(1);
+                return id;
+            }
+    }
+    }
 }
