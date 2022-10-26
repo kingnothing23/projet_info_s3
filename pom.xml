@@ -69,7 +69,7 @@
                     <noHeaderFiles>true</noHeaderFiles>
                     <stripDebug>true</stripDebug>
                     <noManPages>true</noManPages>
-                    <mainClass>fr.insa.beuvron.web.amour.guiFX.Main</mainClass>
+                    <mainClass>fr.insa.guyem.Main</mainClass>
                     <launcher>TutoVideoDessin</launcher>
                     <jlinkImageName>amourFX</jlinkImageName>
                     <!-- pour zipper le dossier image
