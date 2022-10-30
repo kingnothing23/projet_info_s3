@@ -109,7 +109,7 @@ public class gestionbdd {
                     String name = Lire.S();
                     createcategorie(con,name);
                 } else if (rep == 11) {
-                    
+                    affichecategorie(con);
                     
                     
                 }
@@ -385,15 +385,22 @@ public class gestionbdd {
             System.out.println("nom");
             String nom = Lire.S();
             System.out.println("prixbase");
-            float prix = Lire.f();
+            double prix = Lire.f();
             System.out.println("description");
             String desc;
             desc = Lire.S();
             System.out.println("id vendeur");
             int idv = Lire.i();
-
-            createObjets(con, nom, prix, desc, idv);
-
+              System.out.println("categorie ");  
+              affichecategorie(con);
+              System.out.println("0 pour créer une nouvelle categorie "); 
+              int idc = Lire.i();
+              String nomm = Lire.S();
+               idc = createcategorie(con, nomm);
+              
+              
+            createObjets(con, nom, prix, desc,idc, idv);
+           ok =  false ;
         }
     }
 
@@ -418,14 +425,16 @@ public class gestionbdd {
 
     }
 
-    private static int createObjets(Connection con, String nom, float prixbase, String desc, int idv) throws SQLException {
+    private static int createObjets(Connection con, String nom, double prixbase, String desc,int idc , int idv) throws SQLException {
         try ( PreparedStatement pst = con.prepareStatement(
                 """
-                insert into objets (nom,prixbase,vendeur) values (?,?,?)
+                insert into objets (nom,descri,prixbase,categorie,vendeur) values (?,?,?,?,?)
                 """, PreparedStatement.RETURN_GENERATED_KEYS)) {
             pst.setString(1, nom);
-            pst.setFloat(2, prixbase);
-            pst.setInt(3, idv);
+            pst.setDouble(3, prixbase);
+            pst.setString(2, desc);
+            pst.setInt(4, idc);
+            pst.setInt(5, idv);
             pst.executeUpdate();
 
             // je peux alors récupérer les clés créées comme un result set :
@@ -592,5 +601,25 @@ public class gestionbdd {
                 return id;
             }
     }
+    }
+
+    private static void affichecategorie(Connection con) throws SQLException {
+        try ( Statement st = con.createStatement()) {
+
+            try ( ResultSet tlu = st.executeQuery("select * from categorie")) {
+
+                System.out.println("liste des categories :");
+                System.out.println("------------------------");
+                // ici, on veut lister toutes les lignes, d'où le while
+                while (tlu.next()) {
+
+                    int id = tlu.getInt("idc");
+                    // ou par son numéro (la première colonne a le numéro 1)
+                    String nom = tlu.getString(2);
+                    
+                    System.out.println(id + " : " + nom );
+                }
+            }
+        }
     }
 }
