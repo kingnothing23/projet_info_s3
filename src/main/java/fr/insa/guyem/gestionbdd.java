@@ -50,6 +50,7 @@ public class gestionbdd {
             System.out.println("8) liste des encheres");
             System.out.println("9) bilan utilisateur donné");
             System.out.println("10) ajouter une categorie");
+            System.out.println("11) afficher les categories ");
             System.out.println("0) quitter");
             System.out.println("Votre choix ?");
             rep = Lire.i();
@@ -107,6 +108,10 @@ public class gestionbdd {
                     System.out.println("entrer le nom de  la categorie :");
                     String name = Lire.S();
                     createcategorie(con,name);
+                } else if (rep == 11) {
+                    
+                    
+                    
                 }
                 
             } catch (SQLException ex) {
