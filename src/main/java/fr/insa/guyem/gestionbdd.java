@@ -10,6 +10,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -96,7 +102,11 @@ public class gestionbdd {
                         System.out.println(" montant  inferieur ,entrer le montant de  votre enchere");
                         price = Lire.f();
                     }
-                    CreateEnchere(con, obj, utis, price);
+                    
+                   LocalDateTime dateenchere =LocalDateTime.now(); 
+                   
+                   
+                    CreateEnchere(con, obj, utis, price,dateenchere);
                 } else if (rep == 8) {
                     afficheToutesLesEncheres(con);
                 } else if (rep == 9) {
@@ -395,11 +405,17 @@ public class gestionbdd {
               affichecategorie(con);
               System.out.println("0 pour créer une nouvelle categorie "); 
               int idc = Lire.i();
+              if(idc == 0){
               String nomm = Lire.S();
-               idc = createcategorie(con, nomm);
+               idc = createcategorie(con, nomm);}
+              System.out.println("entrer la date de debut de vente");
+               LocalDateTime debutvente =enterdate();
+               System.out.println("entrer la date de fin de vente");
+               LocalDateTime finvente =enterdate();
+                
+                   
               
-              
-            createObjets(con, nom, prix, desc,idc, idv);
+            createObjets(con, nom, prix, desc,idc, idv,debutvente,finvente);
            ok =  false ;
         }
     }
@@ -425,16 +441,20 @@ public class gestionbdd {
 
     }
 
-    private static int createObjets(Connection con, String nom, double prixbase, String desc,int idc , int idv) throws SQLException {
+    private static int createObjets(Connection con, String nom, double prixbase, String desc, int idc, int idv, LocalDateTime debutvente, LocalDateTime finvente) throws SQLException {
         try ( PreparedStatement pst = con.prepareStatement(
                 """
-                insert into objets (nom,descri,prixbase,categorie,vendeur) values (?,?,?,?,?)
+                insert into objets (nom,descri,prixbase,categorie,vendeur,debut,fin) values (?,?,?,?,?,?,?)
                 """, PreparedStatement.RETURN_GENERATED_KEYS)) {
             pst.setString(1, nom);
             pst.setDouble(3, prixbase);
             pst.setString(2, desc);
             pst.setInt(4, idc);
             pst.setInt(5, idv);
+            Timestamp timestamp = Timestamp.valueOf(debutvente);
+            Timestamp timestampe = Timestamp.valueOf(finvente);
+            pst.setTimestamp(6, timestamp);
+            pst.setTimestamp(7, timestampe);
             pst.executeUpdate();
 
             // je peux alors récupérer les clés créées comme un result set :
@@ -501,15 +521,18 @@ public class gestionbdd {
         return actual;
     }
 
-    private static int CreateEnchere(Connection con, int obj, int utis, float price) throws SQLException {
+    private static int CreateEnchere(Connection con, int obj, int utis, float price, LocalDateTime dateenchere) throws SQLException {
 
         try ( PreparedStatement pst = con.prepareStatement(
                 """
-                insert into enchere (de,sur,montant) values (?,?,?)
+                insert into enchere (de,sur,montant,dtae) values (?,?,?,?)
                 """, PreparedStatement.RETURN_GENERATED_KEYS)) {
             pst.setInt(1, utis);
             pst.setInt(2, obj);
             pst.setFloat(3, price);
+            
+        Timestamp timestamp = Timestamp.valueOf(dateenchere);
+            pst.setTimestamp(4, timestamp);
             pst.executeUpdate();
 
             // je peux  alors récupérer les clés créées comme un result set :
@@ -549,7 +572,7 @@ public class gestionbdd {
 
             try ( ResultSet tlu = st.executeQuery("""
                                                   select ide,montant,sur, (SELECT nom from objets where objets.ido=enchere.sur) as objet,
-                                                  de, (SELECT nom from utilisateur where utilisateur.id=enchere.de)as acheteur
+                                                  de, (SELECT nom from utilisateur where utilisateur.id=enchere.de)as acheteur ,dtae
                                                   
                                                   
                                                   
@@ -569,9 +592,9 @@ public class gestionbdd {
                     String vendeur = tlu.getString(6);
                     String objetid = tlu.getString(3);
                     String objet = tlu.getString(4);
-
+String date = tlu.getString(7);
                     System.out.println("id : " + id + "montant :"
-                            + prixbase + "sur :" + objetid + " " + objet + " de " + vendeurid + " " + vendeur);
+                            + prixbase + "sur :" + objetid + " " + objet + " de " + vendeurid + "   " + vendeur + "date "+ date );
                 }
             }
         }
@@ -621,5 +644,24 @@ public class gestionbdd {
                 }
             }
         }
+    }
+
+    private static LocalDateTime enterdate() {
+      LocalDateTime datetime ;
+System.out.println("entrer la date yyyy-mm-jj");
+String entereddate = Lire.S();
+        LocalDate date = LocalDate.parse(entereddate);
+        
+          
+            System.out.println("entrer HH:mm:SS ");
+            DateTimeFormatter parseFormate = DateTimeFormatter.ofPattern("H:mm:ss");
+    Scanner scs = new Scanner(System.in);
+    String timeString = scs.nextLine();
+    LocalTime time = LocalTime.parse(timeString, parseFormate);
+    System.out.println(time);
+    datetime = date.atTime(time) ;
+    System.out.println(datetime );
+    
+        return datetime;
     }
 }
