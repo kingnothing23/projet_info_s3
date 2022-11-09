@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -485,9 +486,9 @@ public class gestionbdd {
             try ( Statement st = con.createStatement()) {
                 String query = "select prixbase from objets where ido=" + obj;
                 try ( ResultSet tlu = st.executeQuery(query)) {
-                    System.out.println("prix actuel :");
+                    tlu.next();
                     actual = tlu.getFloat(1);
-
+                   System.out.println("prix actuel :");
                     System.out.println(actual);
                 }
 
@@ -600,10 +601,48 @@ String date = tlu.getString(7);
         }
     }
 
-    private static void Bilanutil(Connection con, int uti) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    private static void Bilanutil(Connection con, int uti) throws SQLException {
+      
+        try ( Statement st = con.createStatement()) {
+            String query = """
+                           select ide , montant,(SELECT nom from objets where objets.ido=enchere.sur) as objet ,
+                                                                             (SELECT prixbase from objets where objets.ido=enchere.sur) as prixbase ,
+                                                                             
+                                                                             (SELECT debut from objets where objets.ido=enchere.sur) as debut ,
+                                                                             
+                                                                             (SELECT fin from objets where objets.ido=enchere.sur) as fin,sur 
+                                                                                from enchere where enchere.de=""" + uti;
+            try ( ResultSet tlu = st.executeQuery(query)) {
+               
+                while (tlu.next()) {
+                     String cats ;
+                    int id = tlu.getInt("ide");
+                    //ou par son numéro (la première colonne a le numéro 1)
+                    String prixbase = tlu.getString(4);
+                    String montant = tlu.getString(2);
+                    String fin = tlu.getString(5);
+                    
+                    String objet = tlu.getString(3);
+                    String debut = tlu.getString(6);
+                    int ido = tlu.getInt(7);
+                    try ( Statement ss = con.createStatement()) {
+                      String   querys = """
+                                  select nom from categorie where idc =
+                                  """+  id ;
+                                 
+                        try ( ResultSet tlus = st.executeQuery(query)) {
+                            cats = tlu.getString(1);
+                        }
+                        
+                        
+                    }
+                    System.out.println("id : " + id + "montant :"
+                            + montant +   " ojbet : " + objet + " prixbase" + prixbase + " debut   " + debut + "fin "+ fin );
+                
+            }
+        }
     }
-
+    }
     private static int createcategorie(Connection con ,String name) throws SQLException {
         try ( PreparedStatement pst = con.prepareStatement(
                 """
