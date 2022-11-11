@@ -615,7 +615,11 @@ String date = tlu.getString(7);
             try ( ResultSet tlu = st.executeQuery(query)) {
                
                 while (tlu.next()) {
-                     String cats ;
+                     String catsn ;
+                     String catsid ;
+                     float max ;
+                     String usmaxid ;
+                     String usmaxn ;
                     int id = tlu.getInt("ide");
                     //ou par son numéro (la première colonne a le numéro 1)
                     String prixbase = tlu.getString(4);
@@ -625,22 +629,83 @@ String date = tlu.getString(7);
                     String objet = tlu.getString(3);
                     String debut = tlu.getString(6);
                     int ido = tlu.getInt(7);
+                    try ( Statement sst = con.createStatement()) {
+                      String   querysu = """
+                                  select categorie from objets where ido =
+                                  """+  ido ;
+                                 
+                        try ( ResultSet tlusa = sst.executeQuery(querysu)) {
+                            
+                            tlusa.next();
+                            catsid = tlusa.getString(1);
+                            System.out.println(catsid);
+                        }}
                     try ( Statement ss = con.createStatement()) {
                       String   querys = """
                                   select nom from categorie where idc =
-                                  """+  id ;
+                                  """+  catsid ;
                                  
-                        try ( ResultSet tlus = st.executeQuery(query)) {
-                            cats = tlu.getString(1);
-                        }
-                        
+                        try ( ResultSet tlus = ss.executeQuery(querys)) {
+                            
+                            tlus.next();
+                            catsn = tlus.getString(1);
+                            System.out.println(catsn);
+                        }}
+                       try ( Statement sq = con.createStatement()) {
+                      String   queryss = """
+                                  select max(montant) from enchere where sur=
+                                  """+  ido ;
+                                 
+                        try ( ResultSet tlusq = sq.executeQuery(queryss)) {
+                           tlusq.next();
+                            max = tlusq.getFloat(1);
+                            System.out.println(max);
+                        } 
                         
                     }
-                    System.out.println("id : " + id + "montant :"
-                            + montant +   " ojbet : " + objet + " prixbase" + prixbase + " debut   " + debut + "fin "+ fin );
+//                      try ( Statement sqs = con.createStatement()) {
+//                      String   querysst = """
+//                                  select de from enchere where montant=
+//                                  """+ max ;
+//                                 
+//                        try ( ResultSet tlust = sqs.executeQuery(querysst)) {
+//                           
+//                            usmaxid = tlust.getString("de");
+//                            System.out.println(usmaxid);
+//                        } 
+//                        
+//                    } 
+ try ( Statement sq = con.createStatement()) {
+                      String   queryss = """
+                                  select de from enchere where montant=
+                                  """+  max ;
+                                 
+                        try ( ResultSet tlusq = sq.executeQuery(queryss)) {
+                           tlusq.next();
+                            usmaxid = tlusq.getString(1);
+                            System.out.println(usmaxid);
+                        } 
+                        
+                    }
+                       try ( Statement sqt = con.createStatement()) {
+                      String   queryssg = """
+                                  select nom from utilisateur where id=
+                                  """+  usmaxid ;
+                                 
+                        try ( ResultSet tlut = sqt.executeQuery(queryssg)) {
+                          tlut.next();
+                            usmaxn = tlut.getString(1);
+                            System.out.println(usmaxn);
+                        } 
+                        
+                    }
+                    System.out.println("id : " + id + " montant de votre enchere :"
+                            + montant +   "  ojbet : " + objet + " prixbase" + prixbase + " debut   " + debut + "fin "+ fin + "montant maximal "+ max +" user "+usmaxn);
+                    
                 
-            }
+            
         }
+    }
     }
     }
     private static int createcategorie(Connection con ,String name) throws SQLException {
