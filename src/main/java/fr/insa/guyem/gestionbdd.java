@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 
 /**
  * coucousdfgh test merge
+ *
  * @author Utilisateur
  */
 public class gestionbdd {
@@ -38,13 +39,13 @@ public class gestionbdd {
 
     public static Connection defautConnect()
             throws ClassNotFoundException, SQLException {
-        return connectGeneralPostGres("localhost", 5439, "postgres", "postgres", "emgu7747");
+        return connectGeneralPostGres("localhost", 5439, "postgres", "postgres", "pass");
     }
 
     public static void menu(Connection con) throws SQLException {
         int rep = -1;
         while (rep != 0) {
-            System.out.println("Menu BdD Aime");
+            System.out.println("Menu BdD Enchere");
             System.out.println("=============");
             System.out.println("1) créer/recréer la BdD initiale");
             System.out.println("2) liste des utilisateurs");
@@ -93,20 +94,19 @@ public class gestionbdd {
                     int obj = Lire.i();
                     System.out.println("entrer l'id de  l'utilisateur");
                     int utis = Lire.i();
-                    System.out.println("le prix de  lobjet est :");
-                     float pessi = PriceActual(con, obj);
-                      System.out.println(pessi);
+                    System.out.println("le prix de  l objet est :");
+                    float pessi = PriceActual(con, obj);
+                    System.out.println(pessi);
                     System.out.println("entrer le montant de  votre enchere");
                     float price = Lire.f();
-                    while (price <= pessi){
+                    while (price <= pessi) {
                         System.out.println(" montant  inferieur ,entrer le montant de  votre enchere");
                         price = Lire.f();
                     }
-                    
-                   LocalDateTime dateenchere =LocalDateTime.now(); 
-                   
-                   
-                    CreateEnchere(con, obj, utis, price,dateenchere);
+
+                    LocalDateTime dateenchere = LocalDateTime.now();
+
+                    CreateEnchere(con, obj, utis, price, dateenchere);
                 } else if (rep == 8) {
                     afficheToutesLesEncheres(con);
                 } else if (rep == 9) {
@@ -117,13 +117,12 @@ public class gestionbdd {
                 } else if (rep == 10) {
                     System.out.println("entrer le nom de  la categorie :");
                     String name = Lire.S();
-                    createcategorie(con,name);
+                    createcategorie(con, name);
                 } else if (rep == 11) {
                     affichecategorie(con);
-                    
-                    
+
                 }
-                
+
             } catch (SQLException ex) {
                 throw new Error(ex);
             }
@@ -162,7 +161,9 @@ public class gestionbdd {
                      descri varchar(100),
                      prixbase real not null ,
                      categorie integer not null,
-                     vendeur integer not null
+                     vendeur integer not null,
+                     debut timestamp not null,
+                     fin timestamp not null
                     )
                     """);
             st.executeUpdate(
@@ -172,7 +173,8 @@ public class gestionbdd {
                         generated always as identity,
                         de integer not null,
                         sur integer not null,
-                        montant real not null
+                        montant real not null,
+                        date timestamp not null
                     
                     )
                     """);
@@ -290,11 +292,8 @@ public class gestionbdd {
 
         try {
             Connection lol = defautConnect();
-            System.out.println("lol");
-            //creeSchema(lol);
+            System.out.println("Connexion reussie");
             menu(lol);
-
-            System.out.println("tables");
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(test2.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
@@ -380,9 +379,13 @@ public class gestionbdd {
                     int id = tlu.getInt("ido");
                     // ou par son numéro (la première colonne a le numéro 1)
                     String nom = tlu.getString(2);
-                    String prixbase = tlu.getString(3);
-                    String vendeur = tlu.getString(4);
-                    System.out.println(id + " : " + nom + " prix(" + prixbase + ") vendeur :" + vendeur);
+                    String descri = tlu.getString(3);
+                    String prixbase = tlu.getString(4);
+                    String categorie = tlu.getString(5);
+                    String vendeur = tlu.getString(6);
+                    String debut = tlu.getString(7);
+                    String fin = tlu.getString(8);
+                    System.out.println(id + " : " + nom + " prix(" + prixbase + ") vendeur :" + vendeur + " description : " + descri + ", debut de l'enchere :" + debut + ", fin de l'enchere :" + fin);
                 }
             }
         }
@@ -401,22 +404,21 @@ public class gestionbdd {
             desc = Lire.S();
             System.out.println("id vendeur");
             int idv = Lire.i();
-              System.out.println("categorie ");  
-              affichecategorie(con);
-              System.out.println("0 pour créer une nouvelle categorie "); 
-              int idc = Lire.i();
-              if(idc == 0){
-              String nomm = Lire.S();
-               idc = createcategorie(con, nomm);}
-              System.out.println("entrer la date de debut de vente");
-               LocalDateTime debutvente =enterdate();
-               System.out.println("entrer la date de fin de vente");
-               LocalDateTime finvente =enterdate();
-                
-                   
-              
-            createObjets(con, nom, prix, desc,idc, idv,debutvente,finvente);
-           ok =  false ;
+            System.out.println("categorie ");
+            affichecategorie(con);
+            System.out.println("0 pour créer une nouvelle categorie ");
+            int idc = Lire.i();
+            if (idc == 0) {
+                String nomm = Lire.S();
+                idc = createcategorie(con, nomm);
+            }
+            System.out.println("entrer la date de debut de vente");
+            LocalDateTime debutvente = enterdate();
+            System.out.println("entrer la date de fin de vente");
+            LocalDateTime finvente = enterdate();
+
+            createObjets(con, nom, prix, desc, idc, idv, debutvente, finvente);
+            ok = false;
         }
     }
 
@@ -486,11 +488,9 @@ public class gestionbdd {
                 String query = "select prixbase from objets where ido=" + obj;
                 try ( ResultSet tlu = st.executeQuery(query)) {
                     System.out.println("prix actuel :");
+                    tlu.next();
                     actual = tlu.getFloat(1);
-
-                    System.out.println(actual);
                 }
-
             }
 
         } else {
@@ -505,7 +505,7 @@ public class gestionbdd {
 //
 //                }
 //            }
-           try ( PreparedStatement st = con.prepareStatement("select max(montant) from enchere where enchere.sur=?")) {
+            try ( PreparedStatement st = con.prepareStatement("select max(montant) from enchere where enchere.sur=?")) {
                 st.setInt(1, obj);
                 try ( ResultSet tlu = st.executeQuery()) {
                     System.out.println("prix actuel :");
@@ -525,13 +525,13 @@ public class gestionbdd {
 
         try ( PreparedStatement pst = con.prepareStatement(
                 """
-                insert into enchere (de,sur,montant,dtae) values (?,?,?,?)
+                insert into enchere (de,sur,montant,date) values (?,?,?,?)
                 """, PreparedStatement.RETURN_GENERATED_KEYS)) {
             pst.setInt(1, utis);
             pst.setInt(2, obj);
             pst.setFloat(3, price);
-            
-        Timestamp timestamp = Timestamp.valueOf(dateenchere);
+
+            Timestamp timestamp = Timestamp.valueOf(dateenchere);
             pst.setTimestamp(4, timestamp);
             pst.executeUpdate();
 
@@ -546,38 +546,16 @@ public class gestionbdd {
                 return id;
             }
         }
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
     }
 
     private static void afficheToutesLesEncheres(Connection con) throws SQLException {
         try ( Statement st = con.createStatement()) {
 
             try ( ResultSet tlu = st.executeQuery("""
-                                                  select ide,montant,sur, (SELECT nom from objets where objets.ido=enchere.sur) as objet,
-                                                  de, (SELECT nom from utilisateur where utilisateur.id=enchere.de)as acheteur ,dtae
-                                                  
-                                                  
-                                                  
-                                                  
-                                                       from enchere  """)) {
+                select ide,montant,sur, (SELECT nom from objets where objets.ido=enchere.sur) as objet,
+                    de, (SELECT nom from utilisateur where utilisateur.id=enchere.de)as acheteur ,date
+                    from enchere  """)) {
 
                 System.out.println("liste des enchere :");
                 System.out.println("------------------------");
@@ -592,25 +570,129 @@ public class gestionbdd {
                     String vendeur = tlu.getString(6);
                     String objetid = tlu.getString(3);
                     String objet = tlu.getString(4);
-String date = tlu.getString(7);
-                    System.out.println("id : " + id + "montant :"
-                            + prixbase + "sur :" + objetid + " " + objet + " de " + vendeurid + "   " + vendeur + "date "+ date );
+                    String date = tlu.getString(7);
+                    System.out.println("id : " + id + " montant :"
+                            + prixbase + " sur :" + objetid + " " + objet + " de " + vendeurid + " " + vendeur + " ,date " + date);
                 }
             }
         }
     }
 
-    private static void Bilanutil(Connection con, int uti) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    private static void Bilanutil(Connection con, int uti) throws SQLException {
+      
+        try ( Statement st = con.createStatement()) {
+            String query = """
+                           select ide , montant,(SELECT nom from objets where objets.ido=enchere.sur) as objet ,
+                                                                             (SELECT prixbase from objets where objets.ido=enchere.sur) as prixbase ,
+                                                                             
+                                                                             (SELECT debut from objets where objets.ido=enchere.sur) as debut ,
+                                                                             
+                                                                             (SELECT fin from objets where objets.ido=enchere.sur) as fin,sur 
+                                                                                from enchere where enchere.de=""" + uti;
+            try ( ResultSet tlu = st.executeQuery(query)) {
+               
+                while (tlu.next()) {
+                     String catsn ;
+                     String catsid ;
+                     float max ;
+                     String usmaxid ;
+                     String usmaxn ;
+                    int id = tlu.getInt("ide");
+                    //ou par son numéro (la première colonne a le numéro 1)
+                    String prixbase = tlu.getString(4);
+                    String montant = tlu.getString(2);
+                    String fin = tlu.getString(5);
+                    
+                    String objet = tlu.getString(3);
+                    String debut = tlu.getString(6);
+                    int ido = tlu.getInt(7);
+                    try ( Statement sst = con.createStatement()) {
+                      String   querysu = """
+                                  select categorie from objets where ido =
+                                  """+  ido ;
+                                 
+                        try ( ResultSet tlusa = sst.executeQuery(querysu)) {
+                            
+                            tlusa.next();
+                            catsid = tlusa.getString(1);
+                            System.out.println(catsid);
+                        }}
+                    try ( Statement ss = con.createStatement()) {
+                      String   querys = """
+                                  select nom from categorie where idc =
+                                  """+  catsid ;
+                                 
+                        try ( ResultSet tlus = ss.executeQuery(querys)) {
+                            
+                            tlus.next();
+                            catsn = tlus.getString(1);
+                            System.out.println(catsn);
+                        }}
+                       try ( Statement sq = con.createStatement()) {
+                      String   queryss = """
+                                  select max(montant) from enchere where sur=
+                                  """+  ido ;
+                                 
+                        try ( ResultSet tlusq = sq.executeQuery(queryss)) {
+                           tlusq.next();
+                            max = tlusq.getFloat(1);
+                            System.out.println(max);
+                        } 
+                        
+                    }
+//                      try ( Statement sqs = con.createStatement()) {
+//                      String   querysst = """
+//                                  select de from enchere where montant=
+//                                  """+ max ;
+//                                 
+//                        try ( ResultSet tlust = sqs.executeQuery(querysst)) {
+//                           
+//                            usmaxid = tlust.getString("de");
+//                            System.out.println(usmaxid);
+//                        } 
+//                        
+//                    } 
+ try ( Statement sq = con.createStatement()) {
+                      String   queryss = """
+                                  select de from enchere where montant=
+                                  """+  max ;
+                                 
+                        try ( ResultSet tlusq = sq.executeQuery(queryss)) {
+                           tlusq.next();
+                            usmaxid = tlusq.getString(1);
+                            System.out.println(usmaxid);
+                        } 
+                        
+                    }
+                       try ( Statement sqt = con.createStatement()) {
+                      String   queryssg = """
+                                  select nom from utilisateur where id=
+                                  """+  usmaxid ;
+                                 
+                        try ( ResultSet tlut = sqt.executeQuery(queryssg)) {
+                          tlut.next();
+                            usmaxn = tlut.getString(1);
+                            System.out.println(usmaxn);
+                        } 
+                        
+                    }
+                    System.out.println("id : " + id + " montant de votre enchere :"
+                            + montant +   "  ojbet : " + objet + " prixbase" + prixbase + " debut   " + debut + "fin "+ fin + "montant maximal "+ max +" user "+usmaxn);
+                    
+                
+            
+        }
+    }
+    }
     }
 
-    private static int createcategorie(Connection con ,String name) throws SQLException {
+    private static int createcategorie(Connection con, String name) throws SQLException {
         try ( PreparedStatement pst = con.prepareStatement(
                 """
                 insert into categorie (nom) values (?)
                 """, PreparedStatement.RETURN_GENERATED_KEYS)) {
             pst.setString(1, name);
-            
+
             pst.executeUpdate();
 
             // je peux  alors récupérer les clés créées comme un result set :
@@ -623,7 +705,7 @@ String date = tlu.getString(7);
                 int id = rid.getInt(1);
                 return id;
             }
-    }
+        }
     }
 
     private static void affichecategorie(Connection con) throws SQLException {
@@ -639,29 +721,28 @@ String date = tlu.getString(7);
                     int id = tlu.getInt("idc");
                     // ou par son numéro (la première colonne a le numéro 1)
                     String nom = tlu.getString(2);
-                    
-                    System.out.println(id + " : " + nom );
+
+                    System.out.println(id + " : " + nom);
                 }
             }
         }
     }
 
     private static LocalDateTime enterdate() {
-      LocalDateTime datetime ;
-System.out.println("entrer la date yyyy-mm-jj");
-String entereddate = Lire.S();
+        LocalDateTime datetime;
+        System.out.println("entrer la date yyyy-mm-jj");
+        String entereddate = Lire.S();
         LocalDate date = LocalDate.parse(entereddate);
-        
-          
-            System.out.println("entrer HH:mm:SS ");
-            DateTimeFormatter parseFormate = DateTimeFormatter.ofPattern("H:mm:ss");
-    Scanner scs = new Scanner(System.in);
-    String timeString = scs.nextLine();
-    LocalTime time = LocalTime.parse(timeString, parseFormate);
-    System.out.println(time);
-    datetime = date.atTime(time) ;
-    System.out.println(datetime );
-    
+
+        System.out.println("entrer HH:mm:SS ");
+        DateTimeFormatter parseFormate = DateTimeFormatter.ofPattern("H:mm:ss");
+        Scanner scs = new Scanner(System.in);
+        String timeString = scs.nextLine();
+        LocalTime time = LocalTime.parse(timeString, parseFormate);
+        System.out.println(time);
+        datetime = date.atTime(time);
+        System.out.println(datetime);
+
         return datetime;
     }
 }
