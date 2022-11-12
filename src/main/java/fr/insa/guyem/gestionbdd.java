@@ -15,7 +15,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -410,6 +409,7 @@ public class gestionbdd {
             System.out.println("0 pour créer une nouvelle categorie ");
             int idc = Lire.i();
             if (idc == 0) {
+                System.out.println("Veuillez entrer le nom de la categorie");
                 String nomm = Lire.S();
                 idc = createcategorie(con, nomm);
             }
@@ -687,13 +687,13 @@ public class gestionbdd {
     }
     }
 
-   private static int createcategorie(Connection con ,String name) throws SQLException {
+    private static int createcategorie(Connection con, String name) throws SQLException {
         try ( PreparedStatement pst = con.prepareStatement(
                 """
                 insert into categorie (nom) values (?)
                 """, PreparedStatement.RETURN_GENERATED_KEYS)) {
             pst.setString(1, name);
-            
+
             pst.executeUpdate();
 
             // je peux  alors récupérer les clés créées comme un result set :
@@ -706,7 +706,7 @@ public class gestionbdd {
                 int id = rid.getInt(1);
                 return id;
             }
-    }
+        }
     }
 
     private static void affichecategorie(Connection con) throws SQLException {
