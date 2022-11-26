@@ -39,7 +39,7 @@ public class gestionbdd {
 
     public static Connection defautConnect()
             throws ClassNotFoundException, SQLException {
-        return connectGeneralPostGres("localhost", 5439, "postgres", "postgres", "pass");
+        return connectGeneralPostGres("localhost", 5439, "postgres", "postgres", "emgu7747");
     }
 
     public static void menu(Connection con) throws SQLException {
@@ -287,12 +287,93 @@ public class gestionbdd {
             }
         }
     }
+   public static void connectuser(Connection con) throws SQLException  {
+    System.out.println("entrer votre nom d'utilisateur :");
+    String name = Lire.S();
+    System.out.println("entrer votre mdp :");
+    String mdp = Lire.S();
+    int connectyes ;
+    try ( Statement st = con.createStatement()) {
+            String query = "select count(1) from utilisateur where nom like '" + name+"' and pass like '"+mdp+"' group by pass";
+            try ( ResultSet tlu = st.executeQuery(query)) {
+                if (tlu.next() == false){
+                    connectyes = 0;
+                } else {
+                
+                connectyes = tlu.getInt(1);}
+            }
+        }
+    while (connectyes != 1){
+       System.out.println(" pseudo ou mdp incorrect ");
+       System.out.println("entrer votre nom d'utilisateur :");
+     name = Lire.S();
+    System.out.println("entrer votre mdp :");
+     mdp = Lire.S();
+        try ( Statement st = con.createStatement()) {
+            String query = "select count(1) from utilisateur where nom like '" + name+"' and pass like '"+mdp+"' group by pass";
+            try ( ResultSet tlu = st.executeQuery(query)) {
+                if (tlu.next() == false){
+                    connectyes = 0;
+                } else {
+                
+                connectyes = tlu.getInt(1);}
+            }
+        }
+        
+        
+        
+    }
+    System.out.println("Bienvenue "+name);
+        }
+    public static void menunormal (Connection con) throws SQLException{
+         int rep = -1;
+        while (rep != 0) {
+            System.out.println("Menu BdD Enchere");
+            System.out.println("=============");
+            
+            System.out.println("2) liste des utilisateurs");
+            System.out.println("3) liste des objets");
+            System.out.println("7) ajouter un objet");
+            
+            System.out.println("4) placer  une enchere sur  un objet");
+            
+            System.out.println("5) bilan");
+           
+            System.out.println("6) afficher les categories ");
+            System.out.println("0) quitter");
+            System.out.println("Votre choix ?");
+            rep = Lire.i();
+        try {
+                if (rep == 1) {
+                    recreeTout(con);
+                } else if (rep == 2) {
+                    afficheTousLesUtilisateur(con);
+                } else if (rep == 3) {
+                    afficheObjets(con);
+                } else if (rep == 5) {
+                    
+                } else if (rep == 7) {
+                    demandeNouvelObjet(con);
+                }
+    }catch (SQLException ex) {
+                throw new Error(ex);
+            }
+    
+        }
+    
+    
+    
+    }   
+    
+    
+    
 
     public static void main(String[] args) {
 
         try {
             Connection lol = defautConnect();
             System.out.println("Connexion reussie");
+            connectuser(lol);
             menu(lol);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(test2.class.getName()).log(Level.SEVERE, null, ex);
