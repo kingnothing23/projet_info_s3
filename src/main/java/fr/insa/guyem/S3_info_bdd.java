@@ -24,7 +24,7 @@ public class S3_info_bdd {
 //LocalDateTime dateenchere =LocalDateTime.now(); 
 //                   System.out.println(dateenchere);
 LocalDateTime datetime ;
-System.out.println("entrerddd la date yyyy-mm-jj");
+System.out.println("entrerddddd la date yyyy-mm-jj");
 String entereddate = Lire.S();
         LocalDate date = LocalDate.parse(entereddate);
         
