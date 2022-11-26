@@ -287,7 +287,7 @@ public class gestionbdd {
             }
         }
     }
-   public static void connectuser(Connection con) throws SQLException  {
+   public static int connectuser(Connection con) throws SQLException  {
     System.out.println("entrer votre nom d'utilisateur :");
     String name = Lire.S();
     System.out.println("entrer votre mdp :");
@@ -324,8 +324,20 @@ public class gestionbdd {
         
     }
     System.out.println("Bienvenue "+name);
+      int userid;
+    try ( Statement st = con.createStatement()) {
+          String query = "select id from utilisateur where nom like '" + name+"' and pass like '"+mdp+"'";
+          try ( ResultSet tlu = st.executeQuery(query)) {
+             tlu.next();
+              userid = tlu.getInt(1);
+          }
+      } 
+    
+   
+    
+    return userid;
         }
-    public static void menunormal (Connection con) throws SQLException{
+    public static void menunormal (Connection con, int uti) throws SQLException{
          int rep = -1;
         while (rep != 0) {
             System.out.println("Menu BdD Enchere");
@@ -350,8 +362,29 @@ public class gestionbdd {
                     afficheTousLesUtilisateur(con);
                 } else if (rep == 3) {
                     afficheObjets(con);
+                    } else if (rep == 4) {
+                        afficheObjets(con);
+                    System.out.println("entrer l'id de  l'objet");
+                    int obj = Lire.i();
+                    System.out.println("entrer l'id de  l'utilisateur");
+                    int utis = Lire.i();
+                    System.out.println("le prix de  l objet est :");
+                    float pessi = PriceActual(con, obj);
+                    System.out.println(pessi);
+                    System.out.println("entrer le montant de  votre enchere");
+                    float price = Lire.f();
+                    while (price <= pessi) {
+                        System.out.println(" montant  inferieur ,entrer le montant de  votre enchere");
+                        price = Lire.f();
+                    }
+
+                    LocalDateTime dateenchere = LocalDateTime.now();
+
+                    CreateEnchere(con, obj, utis, price, dateenchere);
                 } else if (rep == 5) {
-                    
+                    Bilanutil(con ,uti); }
+                else if (rep == 6) {
+                    affichecategorie(con);
                 } else if (rep == 7) {
                     demandeNouvelObjet(con);
                 }
@@ -373,7 +406,8 @@ public class gestionbdd {
         try {
             Connection lol = defautConnect();
             System.out.println("Connexion reussie");
-            connectuser(lol);
+            int userid =connectuser(lol);
+            menunormal(lol ,userid);
             menu(lol);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(test2.class.getName()).log(Level.SEVERE, null, ex);
