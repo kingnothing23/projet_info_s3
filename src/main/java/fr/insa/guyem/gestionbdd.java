@@ -39,7 +39,7 @@ public class gestionbdd {
 
     public static Connection defautConnect()
             throws ClassNotFoundException, SQLException {
-        return connectGeneralPostGres("localhost", 5439, "postgres", "postgres", "emgu7747");
+        return connectGeneralPostGres("localhost", 5439, "postgres", "postgres", "pass");
     }
 
     public static void menu(Connection con) throws SQLException {

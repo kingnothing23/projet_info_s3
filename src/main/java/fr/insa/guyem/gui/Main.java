@@ -32,12 +32,12 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) {
-        Scene sc = new Scene(new TestCoucou());
+        Scene sc = new Scene(new PageAccueil());
 //        Scene sc = new Scene(new TestFx());
-        stage.setWidth(400);
-        stage.setHeight(300);
+        stage.setWidth(700);
+        stage.setHeight(500);
         stage.setScene(sc);
-        stage.setTitle("AmourFx");
+        stage.setTitle("Ebay.fr");
         stage.show();
     }
 

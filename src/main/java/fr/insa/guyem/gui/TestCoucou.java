@@ -25,7 +25,7 @@ public class TestCoucou extends BorderPane{
         
         Label lNom = new Label ("Votre Nom :");
         TextField fNom = new TextField();
-        fNom.setMaxWidth(50);
+        fNom.setMaxWidth(100);
         
         Label lOutput = new Label();
         
