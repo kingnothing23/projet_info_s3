@@ -32,13 +32,13 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) {
-        Scene sc = new Scene(new Label("coucouFX"));
+        Scene sc = new Scene(new TestCoucou());
 //        Scene sc = new Scene(new TestFx());
-        stage.setWidth(800);
-        stage.setHeight(600);
+        stage.setWidth(400);
+        stage.setHeight(300);
         stage.setScene(sc);
         stage.setTitle("AmourFx");
-          stage.show();
+        stage.show();
     }
 
     public static void main(String[] args) {
