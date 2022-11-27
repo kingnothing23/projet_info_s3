@@ -22,6 +22,7 @@ import javafx.application.Application;
 import static javafx.application.Application.launch;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
 /**
@@ -29,10 +30,11 @@ import javafx.stage.Stage;
  * @author francois
  */
 public class Main extends Application {
-
+    
+    private Scene sc;
     @Override
     public void start(Stage stage) {
-        Scene sc = new Scene(new PageAccueil());
+        sc = new Scene(new VueMain());
 //        Scene sc = new Scene(new TestFx());
         stage.setWidth(700);
         stage.setHeight(500);

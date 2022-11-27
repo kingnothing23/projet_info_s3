@@ -18,7 +18,8 @@ import javafx.scene.text.TextAlignment;
  * @author fears
  */
 public class PageAccueil extends BorderPane{
-    public PageAccueil (){
+    
+    public PageAccueil (VueMain main){
         Label lMessage = new Label("Bienvenue sur le meilleur site d'enchère du monde \nEbuy.fr");
         lMessage.setTextAlignment(TextAlignment.CENTER);
         lMessage.setFont(new Font("Arial",30));
@@ -32,6 +33,13 @@ public class PageAccueil extends BorderPane{
         hbOptions.setSpacing(10);
         vbAccueil.setSpacing(10);
         this.setCenter(vbAccueil);
+        
+        bLogin.setOnAction((t) -> {
+            main.setNormalCenter(new Login(main));
+        });
+        bNewUser.setOnAction((t) -> {
+            main.setNormalCenter(new NouvelUtilisateur(main));
+        });
     }
     
 }
