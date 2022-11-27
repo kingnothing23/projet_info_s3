@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -664,7 +665,49 @@ public class gestionbdd {
         }
 
     }
+    private static void research(Connection con) throws SQLException{
+        System.out.println("entrez le nom de  l'objet ");
+        String nom = Lire.S();
+        ArrayList<Integer> result = new ArrayList<Integer>() ;
+        try ( Statement st = con.createStatement()) {
+         String   queryssg = """
+                                  select ido from objets where nom like '%
+                                  """+ nom+"%'" ;
+                                 
+                        try ( ResultSet tlu = st.executeQuery(queryssg)) {
+                          while (tlu.next()) {
+                              int id = tlu.getInt("ido");
+                    // ou par son numéro (la première colonne a le numéro 1)
+                    String nomb = tlu.getString(2);
+                    String descri = tlu.getString(3);
+                    String prixbase = tlu.getString(4);
+                    String categorie = tlu.getString(5);
+                    String vendeur = tlu.getString(6);
+                    String debut = tlu.getString(7);
+                    String fin = tlu.getString(8);
+                    System.out.println(id + " : " + nomb + " prix(" + prixbase + ") vendeur :" + vendeur + " description : " + descri + ", debut de l'enchere :" + debut + ", fin de l'enchere :" + fin);
+                              
+                          }
+                          
 
+                              
+                              
+                              
+                              
+                          }
+                        }    
+        }
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
     private static void afficheToutesLesEncheres(Connection con) throws SQLException {
         try ( Statement st = con.createStatement()) {
 
