@@ -6,7 +6,6 @@ package fr.insa.guyem.gui;
 
 import fr.insa.guyem.gestionBddGUI;
 import java.sql.SQLException;
-import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 
@@ -33,8 +32,7 @@ public class VueMain extends BorderPane{
         try {
             this.info.setConBdd(gestionBddGUI.defautConnect());
             System.out.println("Connexion reussie");
-            this.welcomePage = new Encheres(this);
-            this.setCenter(scrollContent);
+            this.welcomePage = new PageAccueil(this);
             this.setCenter(welcomePage);
         } catch (ClassNotFoundException ex) {
             System.out.println("Connexion echoue");

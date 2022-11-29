@@ -4,6 +4,9 @@
  */
 package fr.insa.guyem.gui;
 
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -40,7 +43,11 @@ public class PageAccueil extends BorderPane{
             main.setCenter(new Login(main));
         });
         bNewUser.setOnAction((t) -> {
-            main.setCenter(new NouvelUtilisateur(main));
+            try {
+                main.setCenter(new NouvelUtilisateur(main));
+            } catch (SQLException ex) {
+                Logger.getLogger(PageAccueil.class.getName()).log(Level.SEVERE, null, ex);
+            }
         });
     }
     

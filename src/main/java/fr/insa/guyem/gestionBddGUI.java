@@ -47,7 +47,7 @@ public class gestionBddGUI {
         return connectGeneralPostGres("localhost", 5439, "postgres", "postgres", "pass");
     }
 
-    //Permet de se connecter avec un utilisateur en utilisant le mdp et le nom, renvoi l'id de l'utilisateur
+    //Permet de se connecter avec un utilisateur en utilisant le mdp et le mail, renvoi l'id de l'utilisateur
     public static int connectuser(Connection con, String mail, String mdp) throws SQLException {
         int connectyes;
         try ( Statement st = con.createStatement()) {
@@ -76,6 +76,30 @@ public class gestionBddGUI {
         }
     }   
     
+    public static int createUtilisateur(Connection con, String nom, String prenom,String pass, String mail,String codepostal) throws SQLException {
+        try ( PreparedStatement pst = con.prepareStatement(
+                """
+                insert into utilisateur (nom,prenom,pass,mail,codepostal) values (?,?,?,?,?)
+                """, PreparedStatement.RETURN_GENERATED_KEYS)) {
+            pst.setString(1, nom);
+            pst.setString(2, prenom);
+            pst.setString(3, pass);
+            pst.setString(4,mail);
+            pst.setString(5,codepostal);
+            pst.executeUpdate();
+
+            // je peux alors récupérer les clés créées comme un result set :
+            try ( ResultSet rid = pst.getGeneratedKeys()) {
+                // et comme ici je suis sur qu'il y a une et une seule clé, je
+                // fait un simple next 
+                rid.next();
+                // puis je récupère la valeur de la clé créé qui est dans la
+                // première colonne du ResultSet
+                int id = rid.getInt(1);
+                return id;
+            }
+        }
+    }
 
     //permet de creer la colonne des offres des objets, en fonction d'une requete sql
     public static void affichageQuery(Connection con,Encheres mainEncheres,String query) throws SQLException {
