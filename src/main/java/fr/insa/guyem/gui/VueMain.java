@@ -26,16 +26,16 @@ public class VueMain extends BorderPane{
         return info;
     }
     
-    public VueMain(){
+    public VueMain() throws SQLException{
         this.scrollContent = new ScrollPane();
-        this.welcomePage = new PageAccueil(this);
+
         this.info = new InfoSession();
-        this.setCenter(scrollContent);
-        this.setCenter(welcomePage);
         try {
             this.info.setConBdd(gestionBddGUI.defautConnect());
             System.out.println("Connexion reussie");
-            System.out.println(this.info.getConBdd());
+            this.welcomePage = new Encheres(this);
+            this.setCenter(scrollContent);
+            this.setCenter(welcomePage);
         } catch (ClassNotFoundException ex) {
             System.out.println("Connexion echoue");
         } catch (SQLException ex) {

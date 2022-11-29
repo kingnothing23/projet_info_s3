@@ -5,7 +5,6 @@
 package fr.insa.guyem.gui;
 
 import fr.insa.guyem.gestionBddGUI;
-import fr.insa.guyem.gestionbdd;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -33,16 +32,16 @@ public class Login extends BorderPane{
         lMessage.setFont(new Font("Arial",15));
         
         
-        Label lNom = new Label("Nom : ");
+        Label lMail = new Label("Mail : ");
         Label lPass = new Label("Mot de passe : ");
-        TextField tNom = new TextField();
+        TextField tMail = new TextField();
         PasswordField pPass = new PasswordField();
-        HBox hbNom = new HBox(lNom,tNom);
+        HBox hbMail = new HBox(lMail,tMail);
         HBox hbPass = new HBox(lPass,pPass);
         Button bConnexion = new Button("Connexion");
-        VBox vbMid = new VBox(lMessage,hbNom,hbPass,bConnexion);
+        VBox vbMid = new VBox(lMessage,hbMail,hbPass,bConnexion);
         vbMid.setAlignment(Pos.CENTER);
-        hbNom.setAlignment(Pos.CENTER);
+        hbMail.setAlignment(Pos.CENTER);
         hbPass.setAlignment(Pos.CENTER);
         vbMid.setSpacing(15);
         this.setCenter(vbMid);
@@ -51,9 +50,12 @@ public class Login extends BorderPane{
         bConnexion.setOnAction((t) -> {
             Connection con = main.getInfoSession().getConBdd();
             try {
-                main.getInfoSession().setCurrentUserId(gestionBddGUI.connectuser(con,
-                        tNom.getText(),pPass.getText()));
-                
+                int userId = gestionBddGUI.connectuser(con,
+                        tMail.getText(),pPass.getText());
+                main.getInfoSession().setCurrentUserId(userId);
+                if (userId != -1){
+                    main.setCenter(new Encheres(main));
+                }
             } catch (SQLException ex) {
                 Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
             }

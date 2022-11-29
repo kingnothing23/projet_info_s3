@@ -11,6 +11,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
 
 /**
@@ -20,9 +21,10 @@ import javafx.scene.text.TextAlignment;
 public class PageAccueil extends BorderPane{
     
     public PageAccueil (VueMain main){
-        Label lMessage = new Label("Bienvenue sur le meilleur site d'enchère du monde \nEbuy.fr");
+        Label lMessage = new Label("Bienvenue sur le meilleur site d'enchère du monde !\nEbuy.fr");
         lMessage.setTextAlignment(TextAlignment.CENTER);
-        lMessage.setFont(new Font("Arial",30));
+        lMessage.setFont(Font.font("Montserra",FontWeight.BOLD,30));
+ //       lMessage.setTextFill(javafx.scene.paint.Color.BLUE);
         
         Button bLogin = new Button("Login");
         Button bNewUser = new Button("Nouvel utilisateur");

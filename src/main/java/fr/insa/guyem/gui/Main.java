@@ -33,10 +33,10 @@ public class Main extends Application {
 
     private Scene sc;
     @Override
-    public void start(Stage stage) {
+    public void start(Stage stage) throws SQLException{
         sc = new Scene(new VueMain());
 //        Scene sc = new Scene(new TestFx());
-        stage.setWidth(700);
+        stage.setWidth(800);
         stage.setHeight(500);
         stage.setScene(sc);
         stage.setTitle("Ebay.fr");
