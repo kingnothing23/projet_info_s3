@@ -9,6 +9,7 @@ import java.awt.Color;
 import java.awt.Paint;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -75,7 +76,7 @@ public class gestionBddGUI {
         }
     }   
     
-    
+
     //permet de creer la colonne des offres des objets, en fonction d'une requete sql
     public static void affichageQuery(Connection con,Encheres mainEncheres,String query) throws SQLException {
         try ( Statement st = con.createStatement()) {
@@ -89,18 +90,21 @@ public class gestionBddGUI {
                     int id = tlu.getInt("ido");
                     // ou par son numéro (la première colonne a le numéro 1)
                     String nom = tlu.getString(2);
-                    String descri = tlu.getString(3);
-                    String prixbase = tlu.getString(4);
-                    String categorie = tlu.getString(5);
-                    String vendeur = tlu.getString(6);
-                    String debut = tlu.getString(7);
-                    String fin = tlu.getString(8);
+                    String courtedescri = tlu.getString(3);
+                    String longuedescri = tlu.getString(4);
+                    String prixbase = tlu.getString(5);
+                    String categorie = tlu.getString(6);
+                    String vendeur = tlu.getString(7);
+                    String debut = tlu.getString(8);
+                    String fin = tlu.getString(9);
                     
 
                     
                     Label lNom = new Label(nom);
                     lNom.setFont(Font.font("Montserra", FontWeight.BOLD, 20));
-                    Label lDescription = new Label(descri);
+                    lNom.setMaxWidth(180);
+                    lNom.setWrapText(true);
+                    Label lDescription = new Label(courtedescri);
                     lDescription.setFont(Font.font("Montserra", FontWeight.MEDIUM, 10));
                     lDescription.setMaxWidth(140);
                     lDescription.setWrapText(true);
@@ -114,7 +118,7 @@ public class gestionBddGUI {
                     vb1.setSpacing(5);
                     pOffreSingle.setStyle("-fx-padding: 10; -fx-background-color: cornsilk;");
                     pOffreSingle.setMaxWidth(300);
-                    pOffreSingle.setMinHeight(70);
+                    pOffreSingle.setMinHeight(120);
                     
                     listePane.add(pOffreSingle);
                     

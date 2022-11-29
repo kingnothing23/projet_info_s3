@@ -82,9 +82,11 @@ public class gestionbdd {
                         while (exist) {
                             String nom = "U" + ((int) (Math.random() * 10000));
                             String mail = "R" + ((int) (Math.random() * 10000));
+                            String prenom = "Aleatoire";
+                            String codepostal = "67100";
                             if (!nomUtilisateurExiste(con, nom)) {
                                 exist = false;
-                                createUtilisateur(con, nom, "P" + ((int) (Math.random() * 10000)), mail);
+                                createUtilisateur(con, nom, prenom, "P" + ((int) (Math.random() * 10000)), mail,codepostal);
                             }
                         }
 
@@ -147,8 +149,10 @@ public class gestionbdd {
                         id integer not null primary key
                         generated always as identity,
                         nom varchar(30) not null,
+                        prenom varchar(30) not null,
                         pass varchar(30) not null,
-                        mail varchar(30) not null
+                        mail varchar(30) not null unique,
+                        codepostal varchar(30) not null
                         
                     )
                     """);
@@ -159,7 +163,8 @@ public class gestionbdd {
                      ido integer not null primary key 
                      generated always as identity,
                      nom varchar(30) not null,
-                     descri varchar(100),
+                     petitedescri varchar(100) not null,
+                     longuedescri varchar(100),
                      prixbase real not null ,
                      categorie integer not null,
                      vendeur integer not null,
@@ -288,6 +293,7 @@ public class gestionbdd {
             }
         }
     }
+    
    public static int connectuser(Connection con) throws SQLException  {
     System.out.println("entrer votre nom d'utilisateur :");
     String name = Lire.S();
@@ -338,6 +344,7 @@ public class gestionbdd {
     
     return userid;
         }
+   
     public static void menunormal (Connection con, int uti) throws SQLException{
          int rep = -1;
         while (rep != 0) {
@@ -407,8 +414,8 @@ public class gestionbdd {
         try {
             Connection lol = defautConnect();
             System.out.println("Connexion reussie");
-            int userid =connectuser(lol);
-            menunormal(lol ,userid);
+           // int userid =connectuser(lol);
+            //menunormal(lol ,userid);
             menu(lol);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(test2.class.getName()).log(Level.SEVERE, null, ex);
@@ -428,14 +435,16 @@ public class gestionbdd {
         }
     }
 
-    private static int createUtilisateur(Connection con, String nom, String pass, String mail) throws SQLException {
+    private static int createUtilisateur(Connection con, String nom, String prenom,String pass, String mail,String codepostal) throws SQLException {
         try ( PreparedStatement pst = con.prepareStatement(
                 """
-                insert into utilisateur (nom,pass,mail) values (?,?,?)
+                insert into utilisateur (nom,prenom,pass,mail,codepostal) values (?,?,?,?,?)
                 """, PreparedStatement.RETURN_GENERATED_KEYS)) {
             pst.setString(1, nom);
-            pst.setString(2, pass);
-            pst.setString(3, mail);
+            pst.setString(2, prenom);
+            pst.setString(3, pass);
+            pst.setString(4,mail);
+            pst.setString(5,codepostal);
             pst.executeUpdate();
 
             // je peux alors récupérer les clés créées comme un result set :
@@ -464,9 +473,10 @@ public class gestionbdd {
                     int id = tlu.getInt("id");
                     // ou par son numéro (la première colonne a le numéro 1)
                     String nom = tlu.getString(2);
-                    String pass = tlu.getString(3);
-                    String mail = tlu.getString(4);
-                    System.out.println(id + " : " + nom + " (" + pass + ") mail :" + mail);
+                    String prenom = tlu.getString(3);
+                    String pass = tlu.getString(4);
+                    String mail = tlu.getString(5);
+                    System.out.println(id + " : " + nom + prenom + "(" + pass + ") mail :" + mail);
                 }
             }
         }
@@ -495,13 +505,15 @@ public class gestionbdd {
                     int id = tlu.getInt("ido");
                     // ou par son numéro (la première colonne a le numéro 1)
                     String nom = tlu.getString(2);
-                    String descri = tlu.getString(3);
-                    String prixbase = tlu.getString(4);
-                    String categorie = tlu.getString(5);
-                    String vendeur = tlu.getString(6);
-                    String debut = tlu.getString(7);
-                    String fin = tlu.getString(8);
-                    System.out.println(id + " : " + nom + " prix(" + prixbase + ") vendeur :" + vendeur + " description : " + descri + ", debut de l'enchere :" + debut + ", fin de l'enchere :" + fin);
+                    String petitedescri = tlu.getString(3);
+                    String longuedescri =tlu.getString(4);
+                    String prixbase = tlu.getString(5);
+                    String categorie = tlu.getString(6);
+                    String vendeur = tlu.getString(7);
+                    String debut = tlu.getString(8);
+                    String fin = tlu.getString(9);
+                    System.out.println(id + " : " + nom + " prix(" + prixbase + ") vendeur :" + vendeur + " petite description : " + petitedescri + " ,longue description : " +
+                            longuedescri +", debut de l'enchere :" + debut + ", fin de l'enchere :" + fin);
                 }
             }
         }
@@ -515,9 +527,11 @@ public class gestionbdd {
             String nom = Lire.S();
             System.out.println("prixbase");
             double prix = Lire.f();
-            System.out.println("description");
-            String desc;
-            desc = Lire.S();
+            System.out.println("petite description");
+            String petitedesc;
+            petitedesc = Lire.S();
+            System.out.println("Longue description :");
+            String longuedesc = Lire.S();
             System.out.println("id vendeur");
             int idv = Lire.i();
             System.out.println("categorie ");
@@ -534,7 +548,7 @@ public class gestionbdd {
             System.out.println("entrer la date de fin de vente");
             LocalDateTime finvente = enterdate();
 
-            createObjets(con, nom, prix, desc, idc, idv, debutvente, finvente);
+            createObjets(con, nom, prix, petitedesc, longuedesc, idc, idv, debutvente, finvente);
             ok = false;
         }
     }
@@ -545,35 +559,40 @@ public class gestionbdd {
             System.out.println("--- creation nouvel utilisateur");
             System.out.println("nom");
             String nom = Lire.S();
+            System.out.println("prenom");
+            String prenom = Lire.S();
             System.out.println("pass");
             String pass = Lire.S();
             System.out.println("mail");
             String mail = Lire.S();
+            System.out.println("code postal :");
+            String codepostal = Lire.S();
             ok = nomUtilisateurExiste(con, nom);
             if (ok) {
                 System.out.println("ce nom existe deja, choisissez en un autre");
             } else {
-                createUtilisateur(con, nom, pass, mail);
+                createUtilisateur(con, nom, prenom, pass, mail,codepostal);
             }
             ok = false;
         }
 
     }
 
-    private static int createObjets(Connection con, String nom, double prixbase, String desc, int idc, int idv, LocalDateTime debutvente, LocalDateTime finvente) throws SQLException {
+    private static int createObjets(Connection con, String nom, double prixbase, String petitedesc, String longuedesc, int idc, int idv, LocalDateTime debutvente, LocalDateTime finvente) throws SQLException {
         try ( PreparedStatement pst = con.prepareStatement(
                 """
-                insert into objets (nom,descri,prixbase,categorie,vendeur,debut,fin) values (?,?,?,?,?,?,?)
+                insert into objets (nom,petitedescri,longuedescri,prixbase,categorie,vendeur,debut,fin) values (?,?,?,?,?,?,?,?)
                 """, PreparedStatement.RETURN_GENERATED_KEYS)) {
             pst.setString(1, nom);
-            pst.setDouble(3, prixbase);
-            pst.setString(2, desc);
-            pst.setInt(4, idc);
-            pst.setInt(5, idv);
+            pst.setString(2, petitedesc);
+            pst.setString(3, longuedesc);
+            pst.setDouble(4, prixbase);
+            pst.setInt(5, idc);
+            pst.setInt(6, idv);
             Timestamp timestamp = Timestamp.valueOf(debutvente);
             Timestamp timestampe = Timestamp.valueOf(finvente);
-            pst.setTimestamp(6, timestamp);
-            pst.setTimestamp(7, timestampe);
+            pst.setTimestamp(7, timestamp);
+            pst.setTimestamp(8, timestampe);
             pst.executeUpdate();
 
             // je peux alors récupérer les clés créées comme un result set :
