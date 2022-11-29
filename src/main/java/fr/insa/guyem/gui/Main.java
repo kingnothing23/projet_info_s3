@@ -18,11 +18,11 @@ along with CoursBeuvron.  If not, see <http://www.gnu.org/licenses/>.
  */
 package fr.insa.guyem.gui;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
 /**
@@ -30,7 +30,7 @@ import javafx.stage.Stage;
  * @author francois
  */
 public class Main extends Application {
-    
+
     private Scene sc;
     @Override
     public void start(Stage stage) {

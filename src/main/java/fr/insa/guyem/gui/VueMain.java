@@ -4,6 +4,8 @@
  */
 package fr.insa.guyem.gui;
 
+import fr.insa.guyem.gestionBddGUI;
+import java.sql.SQLException;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
@@ -18,20 +20,27 @@ public class VueMain extends BorderPane{
     
     private ScrollPane scrollContent;
     private BorderPane welcomePage;
+    private InfoSession info;
     
-    public void setScrollCenter (Node n){
-        this.scrollContent.setContent(n);
-        this.setCenter(scrollContent);
-    }
-            
-    public void setNormalCenter (Node n){
-        this.setCenter(n);
+    public InfoSession getInfoSession(){
+        return info;
     }
     
     public VueMain(){
         this.scrollContent = new ScrollPane();
         this.welcomePage = new PageAccueil(this);
+        this.info = new InfoSession();
         this.setCenter(scrollContent);
-        setNormalCenter(welcomePage);
+        this.setCenter(welcomePage);
+        try {
+            this.info.setConBdd(gestionBddGUI.defautConnect());
+            System.out.println("Connexion reussie");
+            System.out.println(this.info.getConBdd());
+        } catch (ClassNotFoundException ex) {
+            System.out.println("Connexion echoue");
+        } catch (SQLException ex) {
+            System.out.println("Connexion echoue");
+        }
+
     }
 }

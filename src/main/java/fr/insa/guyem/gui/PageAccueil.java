@@ -35,10 +35,10 @@ public class PageAccueil extends BorderPane{
         this.setCenter(vbAccueil);
         
         bLogin.setOnAction((t) -> {
-            main.setNormalCenter(new Login(main));
+            main.setCenter(new Login(main));
         });
         bNewUser.setOnAction((t) -> {
-            main.setNormalCenter(new NouvelUtilisateur(main));
+            main.setCenter(new NouvelUtilisateur(main));
         });
     }
     

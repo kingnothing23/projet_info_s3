@@ -4,6 +4,12 @@
  */
 package fr.insa.guyem.gui;
 
+import fr.insa.guyem.gestionBddGUI;
+import fr.insa.guyem.gestionbdd;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -40,5 +46,17 @@ public class Login extends BorderPane{
         hbPass.setAlignment(Pos.CENTER);
         vbMid.setSpacing(15);
         this.setCenter(vbMid);
+        
+        
+        bConnexion.setOnAction((t) -> {
+            Connection con = main.getInfoSession().getConBdd();
+            try {
+                main.getInfoSession().setCurrentUserId(gestionBddGUI.connectuser(con,
+                        tNom.getText(),pPass.getText()));
+                
+            } catch (SQLException ex) {
+                Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
     }
 }
