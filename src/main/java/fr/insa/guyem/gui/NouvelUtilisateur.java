@@ -16,7 +16,10 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
@@ -25,52 +28,62 @@ import javafx.scene.text.TextAlignment;
  *
  * @author fears
  */
-public class NouvelUtilisateur extends GridPane{
+public class NouvelUtilisateur extends VBox{
     public NouvelUtilisateur (VueMain main) throws SQLException{
+        GridPane gp = new GridPane();
         Label lMessage = new Label("L'équipe de Ebuy.fr est heureuse de faire votre connaissance !\n"
                 + "Ne vous inquiétez pas, cela ne prendra que quelques clics.");
         lMessage.setTextAlignment(TextAlignment.CENTER);
         lMessage.setFont(Font.font("Montserra",FontWeight.BOLD,20));
-        this.add(lMessage, 0, 0,2,1);
+        gp.add(lMessage, 0, 0,2,1);
         Label lMessage2 = new Label("Veuillez rentrer vos informations : ");
         lMessage2.setTextAlignment(TextAlignment.CENTER);
         lMessage2.setFont(Font.font("Montserra",FontWeight.BOLD,15));
-        this.add(lMessage2, 0, 1);
+        gp.add(lMessage2, 0, 1);
         
         Label lNom = new Label("Nom : ");
-        this.add(lNom,0,2);
+        gp.add(lNom,0,2);
         Label lPrenom = new Label ("Prenom : ");
-        this.add(lPrenom, 0, 3);
+        gp.add(lPrenom, 0, 3);
         Label lPass = new Label("Mot de passe : ");
-        this.add(lPass,0,4);
+        gp.add(lPass,0,4);
         Label lConfirmPass = new Label("Confirmation du mot de passe : ");
-        this.add(lConfirmPass,0,5);
+        gp.add(lConfirmPass,0,5);
         Label lEmail = new Label("Email : ");
-        this.add(lEmail,0,6);
+        gp.add(lEmail,0,6);
         Label lCodePostal = new Label("Code Postal : ");
-        this.add(lCodePostal,0,7);
+        gp.add(lCodePostal,0,7);
         TextField tNom = new TextField();
-        this.add(tNom,1,2);
+        gp.add(tNom,1,2);
         TextField tPrenom = new TextField();
-        this.add(tPrenom,1,3);
+        gp.add(tPrenom,1,3);
         PasswordField pPass = new PasswordField();
-        this.add(pPass,1,4);
+        gp.add(pPass,1,4);
         PasswordField pConfirmPass = new PasswordField();
-        this.add(pConfirmPass,1,5);
+        gp.add(pConfirmPass,1,5);
         TextField tEmail = new TextField();
-        this.add(tEmail, 1, 6);
+        gp.add(tEmail, 1, 6);
         TextField tCodePostal = new TextField();
-        this.add(tCodePostal, 1, 7);
+        gp.add(tCodePostal, 1, 7);
         ToggleButton tbConnexion = new ToggleButton("Création du compte");
-        this.add(tbConnexion,0,10);
+        gp.add(tbConnexion,0,10);
         CheckBox cb = new CheckBox();
-        this.add(cb, 1, 9);
+        gp.add(cb, 1, 9);
         Label lCb = new Label("J'accepte les CGU :");
-        this.add(lCb, 0, 9);
-        this.setAlignment(Pos.CENTER);
-        this.setVgap(10);
-        this.setHgap(10);
+        gp.add(lCb, 0, 9);
+        gp.setAlignment(Pos.CENTER);
+        gp.setVgap(10);
+        gp.setHgap(10);
         tbConnexion.setDisable(true);
+        
+        Button bHome = new Button("Retour à l'accueil");
+        ImageView view = new ImageView (new Image(getClass().getResourceAsStream("home2.png")));
+        view.setFitHeight(50);
+        view.setFitWidth(50);
+        bHome.setGraphic(view);
+        gp.add(bHome,0,0);
+        this.getChildren().addAll(bHome,gp);
+        this.setSpacing(10);
         
         cb.setOnAction((t) -> {
             if (tbConnexion.isDisabled()){
@@ -81,6 +94,9 @@ public class NouvelUtilisateur extends GridPane{
             
         });
         
+        bHome.setOnAction((t) -> {
+            main.setCenter(new PageAccueil(main));
+        });
         
         tbConnexion.setOnAction((t) -> {
             if (tNom.getText().isEmpty()==false && tPrenom.getText().isEmpty()==false && pPass.getText().isEmpty()==false

@@ -14,11 +14,14 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
+import javafx.scene.image.Image;
+import javafx.scene.text.FontWeight;
 
 /**
  *
@@ -29,7 +32,7 @@ public class Login extends BorderPane{
     public Login (VueMain main){
         Label lMessage = new Label("Veuillez rentrer vos identifiants");
         lMessage.setTextAlignment(TextAlignment.CENTER);
-        lMessage.setFont(new Font("Arial",15));
+        lMessage.setFont(Font.font("Montserra",FontWeight.BOLD,15));
         
         
         Label lMail = new Label("Mail : ");
@@ -44,6 +47,12 @@ public class Login extends BorderPane{
         hbMail.setAlignment(Pos.CENTER);
         hbPass.setAlignment(Pos.CENTER);
         vbMid.setSpacing(15);
+        ImageView view = new ImageView (new Image(getClass().getResourceAsStream("home2.png")));
+        view.setFitHeight(50);
+        view.setFitWidth(50);
+        Button bHome = new Button("Retour à l'accueil");
+        bHome.setGraphic(view);
+        this.setTop(bHome);
         this.setCenter(vbMid);
         
         
@@ -59,6 +68,10 @@ public class Login extends BorderPane{
             } catch (SQLException ex) {
                 Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
             }
+        });
+        
+        bHome.setOnAction((t) -> {
+            main.setCenter(new PageAccueil(main));
         });
     }
 }
