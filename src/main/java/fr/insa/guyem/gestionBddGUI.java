@@ -143,7 +143,9 @@ public class gestionBddGUI {
                     pOffreSingle.setStyle("-fx-padding: 10; -fx-background-color: cornsilk;");
                     pOffreSingle.setMaxWidth(300);
                     pOffreSingle.setMinHeight(120);
-                    
+                    pOffreSingle.setOnMouseClicked((t) -> {
+                        System.out.println("Offre Cliquée");
+                    });
                     listePane.add(pOffreSingle);
                     
                     
