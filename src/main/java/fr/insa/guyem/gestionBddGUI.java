@@ -5,19 +5,22 @@
 package fr.insa.guyem;
 
 import fr.insa.guyem.gui.Encheres;
-import java.awt.Color;
-import java.awt.Paint;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Scanner;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -143,8 +146,10 @@ public class gestionBddGUI {
                     pOffreSingle.setStyle("-fx-padding: 10; -fx-background-color: cornsilk;");
                     pOffreSingle.setMaxWidth(300);
                     pOffreSingle.setMinHeight(120);
+                    
                     pOffreSingle.setOnMouseClicked((t) -> {
                         System.out.println("Offre Cliquée");
+                        System.out.println("Start : " + debut +" ,End : " + fin);
                     });
                     listePane.add(pOffreSingle);
                     
@@ -171,4 +176,50 @@ public class gestionBddGUI {
         affichageQuery(con,mainEncheres,query);
     }
     
+    //Methode pour creer un nouvel objet
+    public static int createObjets(Connection con, String nom, double prixbase, String petitedesc,
+            String longuedesc, int idc, int idv, LocalDateTime debutvente, LocalDateTime finvente) throws SQLException {
+        try ( PreparedStatement pst = con.prepareStatement(
+                """
+                insert into objets (nom,petitedescri,longuedescri,prixbase,categorie,vendeur,debut,fin) values (?,?,?,?,?,?,?,?)
+                """, PreparedStatement.RETURN_GENERATED_KEYS)) {
+            pst.setString(1, nom);
+            pst.setString(2, petitedesc);
+            pst.setString(3, longuedesc);
+            pst.setDouble(4, prixbase);
+            pst.setInt(5, idc);
+            pst.setInt(6, idv);
+            Timestamp timestamp = Timestamp.valueOf(debutvente);
+            Timestamp timestampe = Timestamp.valueOf(finvente);
+            pst.setTimestamp(7, timestamp);
+            pst.setTimestamp(8, timestampe);
+            pst.executeUpdate();
+
+            // je peux alors récupérer les clés créées comme un result set :
+            try ( ResultSet rid = pst.getGeneratedKeys()) {
+                // et comme ici je suis sur qu'il y a une et une seule clé, je
+                // fait un simple next 
+                rid.next();
+                // puis je récupère la valeur de la clé créé qui est dans la
+                // première colonne du ResultSet
+                int id = rid.getInt(1);
+                return id;
+            }
+        }
+    }
+    
+    //Converti une date et un temps en string en LocalDateTime
+    public static LocalDateTime convertDateTime(String enteredDate,String timeString) {
+        LocalDateTime datetime;
+        LocalDate date = LocalDate.parse(enteredDate);
+       
+        LocalTime time = LocalTime.parse(timeString);
+        datetime = date.atTime(time);
+
+        return datetime;
+    }
+    
+    //A FAIRE : RETURN STRING DU NOM UTILISATEUR DEPUIS ID UTILISATEUR 
+    //A FAIRE : RETURN LISTE DES CATEGORIES SOUS FORME DE STRING
+    //A FAIRE : AFFICHER VRAI PRIX SUR LE TABLEAU DE BORD
 }

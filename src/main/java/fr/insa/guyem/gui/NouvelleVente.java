@@ -7,13 +7,16 @@ package fr.insa.guyem.gui;
 import fr.insa.guyem.gestionBddGUI;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.image.Image;
@@ -51,32 +54,49 @@ public class NouvelleVente extends VBox{
         gp.add(lLonguedesc,0,4);
         Label lPrixInitial = new Label("Prix initial de la vente : ");
         gp.add(lPrixInitial,0,5);
-        Label lDateDebut = new Label("Debut de la vente (format: AAAA/MM/JJ): ");
+        Label lDateDebut = new Label("Debut de la vente (format: AAAA-MM-JJ): ");
         gp.add(lDateDebut,0,6);
-        Label lDateFin = new Label("Fin de la vente (format: AAAA/MM/JJ): ");
+        Label lDateFin = new Label("Fin de la vente (format: AAAA-MM-JJ): ");
         gp.add(lDateFin,0,7);
+        
+        Label lHourDebut = new Label("Heure du début de la vente (format: HH:MM:SS): ");
+        gp.add(lHourDebut,0,8);
+        Label lHourFin = new Label("Fin de la vente (format: HH:MM:SS): ");
+        gp.add(lHourFin,0,9);
+        
+        Label lCategorie = new Label("Catégorie de l'objet : ");
+        gp.add(lCategorie, 0, 10);
+        ChoiceBox cbCategorie = new ChoiceBox(); //POUVOIR RECUPERER LES CATEGORIES SOUS FORME DE LISTE DE STRING
+        gp.add(cbCategorie,1,10);
         TextField tNom = new TextField();
         gp.add(tNom,1,2);
         TextField tPetitedesc = new TextField();
         gp.add(tPetitedesc,1,3);
-        TextField tLonguedesc = new TextField();
+        TextArea tLonguedesc = new TextArea();
         gp.add(tLonguedesc,1,4);
+        tLonguedesc.setMaxWidth(300);
+        tLonguedesc.setMaxHeight(40);
+        tLonguedesc.setWrapText(true);
         TextField tPrixInitial = new TextField();
         gp.add(tPrixInitial,1,5);
         TextField tDateDebut = new TextField();
         gp.add(tDateDebut, 1, 6);
         TextField tDateFin = new TextField();
         gp.add(tDateFin, 1, 7);
-        Button bCreationVente = new Button("Création de la vente");
-        gp.add(bCreationVente,0,10);
+        TextField tHourDebut = new TextField();
+        gp.add(tHourDebut, 1, 8);
+        TextField tHourFin = new TextField();
+        gp.add(tHourFin, 1, 9);
+        ToggleButton tbCreationVente = new ToggleButton("Création de la vente");
+        gp.add(tbCreationVente,0,12);
         CheckBox cb = new CheckBox();
-        gp.add(cb, 1, 9);
+        gp.add(cb, 1, 11);
         Label lCb = new Label("J'accepte les Conditions générales de Vente :");
-        gp.add(lCb, 0, 9);
+        gp.add(lCb, 0, 11);
         gp.setAlignment(Pos.CENTER);
         gp.setVgap(10);
         gp.setHgap(10);
-        bCreationVente.setDisable(true);
+        tbCreationVente.setDisable(true);
         
         Button bHome = new Button("Retour au tableau des ventes");
         ImageView view = new ImageView (new Image(getClass().getResourceAsStream("home2.png")));
@@ -88,16 +108,28 @@ public class NouvelleVente extends VBox{
         this.setSpacing(10);
         
         cb.setOnAction((t) -> {
-            if (bCreationVente.isDisabled()){
-                bCreationVente.setDisable(false);
+            if (tbCreationVente.isDisabled()){
+                tbCreationVente.setDisable(false);
             }else{
-                bCreationVente.setDisable(true);
+                tbCreationVente.setDisable(true);
             }
             
         });
         
         bHome.setOnAction((t) -> {
             try {
+                gestionBddGUI.tousLesObjets(con, mainEncheres);
+            } catch (SQLException ex) {
+                Logger.getLogger(NouvelleVente.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
+        
+        tbCreationVente.setOnAction((t) -> {
+            try {
+                LocalDateTime ldtDateDebut = gestionBddGUI.convertDateTime(tDateDebut.getText(),tHourDebut.getText());
+                LocalDateTime ldtDateFin = gestionBddGUI.convertDateTime(tDateFin.getText(),tHourFin.getText());
+                gestionBddGUI.createObjets(con, tNom.getText(), Double.parseDouble(tPrixInitial.getText()), tPetitedesc.getText(),
+                        tLonguedesc.getText(), 1,main.getInfoSession().getCurrentUserId() , ldtDateDebut, ldtDateFin);
                 gestionBddGUI.tousLesObjets(con, mainEncheres);
             } catch (SQLException ex) {
                 Logger.getLogger(NouvelleVente.class.getName()).log(Level.SEVERE, null, ex);

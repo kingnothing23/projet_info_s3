@@ -37,7 +37,7 @@ public class Main extends Application {
         sc = new Scene(new VueMain());
 //        Scene sc = new Scene(new TestFx());
         stage.setWidth(800);
-        stage.setHeight(500);
+        stage.setHeight(600);
         stage.setScene(sc);
         stage.setTitle("Ebay.fr");
         stage.show();
