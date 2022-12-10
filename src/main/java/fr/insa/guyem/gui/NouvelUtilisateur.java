@@ -20,6 +20,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
@@ -66,10 +67,14 @@ public class NouvelUtilisateur extends VBox{
         TextField tCodePostal = new TextField();
         gp.add(tCodePostal, 1, 7);
         ToggleButton tbConnexion = new ToggleButton("Création du compte");
-        gp.add(tbConnexion,0,10);
+        gp.add(tbConnexion,0,11);
         CheckBox cb = new CheckBox();
         gp.add(cb, 1, 9);
         Label lCb = new Label("J'accepte les CGU :");
+        Label lErreur = new Label("");
+        gp.add(lErreur, 0, 10,2,1);
+        lErreur.setFont(Font.font("Montserra",12));
+        lErreur.setTextFill(Color.RED);
         gp.add(lCb, 0, 9);
         gp.setAlignment(Pos.CENTER);
         gp.setVgap(10);
@@ -115,6 +120,7 @@ public class NouvelUtilisateur extends VBox{
                         }
                     } catch (SQLException ex) {
                         Logger.getLogger(NouvelUtilisateur.class.getName()).log(Level.SEVERE, null, ex);
+                        lErreur.setText("Il y a eu une erreur dans la création de votre compte, veuillez réessayer");
                     }
                 }}
         });

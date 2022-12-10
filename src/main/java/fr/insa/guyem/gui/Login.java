@@ -21,6 +21,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.text.FontWeight;
 
 /**
@@ -37,12 +39,15 @@ public class Login extends BorderPane{
         
         Label lMail = new Label("Mail : ");
         Label lPass = new Label("Mot de passe : ");
+        Label lErreur = new Label("");
+        lErreur.setFont(Font.font("Montserra",12));
+        lErreur.setTextFill(Color.RED);
         TextField tMail = new TextField();
         PasswordField pPass = new PasswordField();
         HBox hbMail = new HBox(lMail,tMail);
         HBox hbPass = new HBox(lPass,pPass);
         Button bConnexion = new Button("Connexion");
-        VBox vbMid = new VBox(lMessage,hbMail,hbPass,bConnexion);
+        VBox vbMid = new VBox(lMessage,hbMail,hbPass,bConnexion,lErreur);
         vbMid.setAlignment(Pos.CENTER);
         hbMail.setAlignment(Pos.CENTER);
         hbPass.setAlignment(Pos.CENTER);
@@ -64,6 +69,8 @@ public class Login extends BorderPane{
                 main.getInfoSession().setCurrentUserId(userId);
                 if (userId != -1){
                     main.setCenter(new Encheres(main));
+                }else{
+                    lErreur.setText("Mail ou mot de pass non reconnu, veuillez réessayer");
                 }
             } catch (SQLException ex) {
                 Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
