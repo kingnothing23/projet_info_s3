@@ -5,6 +5,8 @@
 package fr.insa.guyem;
 
 import fr.insa.guyem.gui.Encheres;
+import fr.insa.guyem.gui.PageObjet;
+import fr.insa.guyem.gui.VueMain;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -105,7 +107,7 @@ public class gestionBddGUI {
     }
 
     //permet de creer la colonne des offres des objets, en fonction d'une requete sql
-    public static void affichageQuery(Connection con,Encheres mainEncheres,String query) throws SQLException {
+    public static void affichageQuery(Connection con,Encheres mainEncheres,VueMain main,String query) throws SQLException {
         try ( Statement st = con.createStatement()) {
 
             try ( ResultSet tlu = st.executeQuery(query)) {
@@ -124,7 +126,7 @@ public class gestionBddGUI {
                     String vendeur = tlu.getString(7);
                     String debut = tlu.getString(8);
                     String fin = tlu.getString(9);
-                    
+                    float prixActuel = priceActual(con,id);
 
                     
                     Label lNom = new Label(nom);
@@ -135,21 +137,36 @@ public class gestionBddGUI {
                     lDescription.setFont(Font.font("Montserra", FontWeight.MEDIUM, 10));
                     lDescription.setMaxWidth(140);
                     lDescription.setWrapText(true);
+                    Label lVendeur = new Label ("Vendu par : "+vendeur);
+                    lVendeur.setFont(Font.font("Montserra", FontWeight.BOLD, 12));
 
-                    VBox vb1 = new VBox(lNom, lDescription);
-                    Label lPrix = new Label(prixbase + " €");
+                    
+                    Label lPrix = new Label(prixActuel + " €");
+                    Label lMessagePrix = new Label("Enchère la plus haute\nactuellement :");
                     lPrix.setFont(Font.font("Montserra", FontWeight.EXTRA_BOLD, 26));
-                    lPrix.setLayoutX(200);
+                    lMessagePrix.setFont(Font.font("Montserra", FontWeight.BOLD, 10));
+                    Label lAcheteurPlusHaut = new Label("");
+                    lAcheteurPlusHaut.setFont(Font.font("Montserra", FontWeight.BOLD, 10));
+                    
+                    if (main.getInfoSession().getCurrentUserId() == Integer.parseInt(vendeur)){
+                        lAcheteurPlusHaut.setText("Vous êtes le vendeur \nde cet objet");
+                    }
+                    
+                    
+                    VBox vb1 = new VBox(lNom, lDescription,lVendeur);
+                    VBox vb2 = new VBox(lMessagePrix,lPrix,lAcheteurPlusHaut);
                     vb1.setLayoutX(15);
-                    Pane pOffreSingle = new Pane(vb1, lPrix);
                     vb1.setSpacing(5);
+                    vb2.setLayoutX(200);
+                    vb2.setSpacing(5);
+                    
+                    Pane pOffreSingle = new Pane(vb1, vb2);
                     pOffreSingle.setStyle("-fx-padding: 10; -fx-background-color: cornsilk;");
-                    pOffreSingle.setMaxWidth(300);
+                    pOffreSingle.setMaxWidth(315);
                     pOffreSingle.setMinHeight(120);
                     
                     pOffreSingle.setOnMouseClicked((t) -> {
-                        System.out.println("Offre Cliquée");
-                        System.out.println("Start : " + debut +" ,End : " + fin);
+                        mainEncheres.setCenter(new PageObjet(main,mainEncheres,id,nom,courtedescri,longuedescri,prixActuel));
                     });
                     listePane.add(pOffreSingle);
                     
@@ -171,9 +188,9 @@ public class gestionBddGUI {
     }
     
     //affiche tous les objets, notamment quand on arrive sur la session
-    public static void tousLesObjets(Connection con, Encheres mainEncheres)throws SQLException{
+    public static void tousLesObjets(Connection con, Encheres mainEncheres,VueMain main)throws SQLException{
         String query = "select * from objets";
-        affichageQuery(con,mainEncheres,query);
+        affichageQuery(con,mainEncheres,main,query);
     }
     
     //Methode pour creer un nouvel objet
@@ -219,7 +236,60 @@ public class gestionBddGUI {
         return datetime;
     }
     
+    //Renvoi le montant de l'enchère la plus haute sur un certain objet:
+    public static float priceActual(Connection con, int obj) throws SQLException {
+        int yesin;
+        float actual;
+        try ( Statement st = con.createStatement()) {
+            String query = "select count(sur) from enchere where sur=" + obj;
+            try ( ResultSet tlu = st.executeQuery(query)) {
+                tlu.next();
+                yesin = tlu.getInt(1);
+            }
+        }
+
+        if (yesin == 0) {
+            try ( Statement st = con.createStatement()) {
+                String query = "select prixbase from objets where ido=" + obj;
+                try ( ResultSet tlu = st.executeQuery(query)) {
+                    tlu.next();
+                    actual = tlu.getFloat(1);
+                }
+            }
+
+        } else {
+            try ( PreparedStatement st = con.prepareStatement("select max(montant) from enchere where enchere.sur=?")) {
+                st.setInt(1, obj);
+                try ( ResultSet tlu = st.executeQuery()) {
+                    tlu.next();
+                    actual = tlu.getFloat(1);
+                }
+            }
+
+        }
+        return actual;
+    }
+    
+    //Permet de créer une nouvelle enchère sur un objet existant
+    public static void createEnchere(Connection con, int obj, int de, float price, LocalDateTime dateenchere) throws SQLException {
+
+        try ( PreparedStatement pst = con.prepareStatement(
+                """
+                insert into enchere (de,sur,montant,date) values (?,?,?,?)
+                """, PreparedStatement.RETURN_GENERATED_KEYS)) {
+            pst.setInt(1, de);
+            pst.setInt(2, obj);
+            pst.setFloat(3, price);
+
+            Timestamp timestamp = Timestamp.valueOf(dateenchere);
+            pst.setTimestamp(4, timestamp);
+            pst.executeUpdate();
+            
+        }
+    }
+    
     //A FAIRE : RETURN STRING DU NOM UTILISATEUR DEPUIS ID UTILISATEUR 
     //A FAIRE : RETURN LISTE DES CATEGORIES SOUS FORME DE STRING
-    //A FAIRE : AFFICHER VRAI PRIX SUR LE TABLEAU DE BORD
+    //A FAIRE : RETURN ID VENDEUR DEPUIS ID OBJET
+    //A FAIRE : ID UTILISATEUR AVEC ENCHERE LA PLUS HAUTE A PARTIR D'UN ID OBJET
 }

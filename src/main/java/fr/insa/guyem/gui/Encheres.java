@@ -38,7 +38,7 @@ public class Encheres extends BorderPane{
         Button bEncheres = new Button ("Mes enchères");
         bEncheres.setFont(Font.font("Montserra",FontWeight.BOLD,14));
         VBox vbBoutonUtilisateur = new VBox(bEncheres,bVentes,bDeco);
-        TitledPane tpUtilisateur = new TitledPane("Utilisateur test",vbBoutonUtilisateur);// Avoir méthode renvoie nom utilisateur depuis id
+        TitledPane tpUtilisateur = new TitledPane("Utilisateur :\n"+Integer.toString(main.getInfoSession().getCurrentUserId()),vbBoutonUtilisateur);// Avoir méthode renvoie nom utilisateur depuis id
         tpUtilisateur.setFont(Font.font("Montserra",FontWeight.BOLD,16));
         tpUtilisateur.setExpanded(false);
         Button bNouvelleVente = new Button("Créer une vente");
@@ -56,7 +56,7 @@ public class Encheres extends BorderPane{
                     });
         
         //Affichage de tous les objets du site
-        gestionBddGUI.tousLesObjets(con,this);
+        gestionBddGUI.tousLesObjets(con,this,main);
     }
     
 }
