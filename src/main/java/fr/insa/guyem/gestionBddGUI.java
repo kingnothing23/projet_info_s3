@@ -186,7 +186,15 @@ public class gestionBddGUI {
             }
         }
     }
-    
+   public static void objetsfiltres(Connection con,Encheres mainEncheres,VueMain main,ArrayList<Integer> obj) throws SQLException {
+      String query;
+      int ier ;
+       for(int i =0 ; i <= obj.size() ;){
+           ier = obj.get(i);
+           query = "select * from objets where ido='"+ier+"'";
+           affichageQuery(con, mainEncheres, main, query);
+       }
+   }
     //affiche tous les objets, notamment quand on arrive sur la session
     public static void tousLesObjets(Connection con, Encheres mainEncheres,VueMain main)throws SQLException{
         String query = "select * from objets";
