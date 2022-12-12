@@ -49,7 +49,7 @@ public class gestionBddGUI {
     //Permet de se connecter a la Bdd de base
     public static Connection defautConnect() 
             throws ClassNotFoundException, SQLException {
-        return connectGeneralPostGres("localhost", 5439, "postgres", "postgres", "pass");
+        return connectGeneralPostGres("localhost", 5439, "postgres", "postgres", "emgu7747");
     }
 
     //Permet de se connecter avec un utilisateur en utilisant le mdp et le mail, renvoi l'id de l'utilisateur
@@ -105,7 +105,7 @@ public class gestionBddGUI {
             }
         }
     }
-
+   
     //permet de creer la colonne des offres des objets, en fonction d'une requete sql
     public static void affichageQuery(Connection con,Encheres mainEncheres,VueMain main,String query) throws SQLException {
         try ( Statement st = con.createStatement()) {

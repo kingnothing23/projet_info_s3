@@ -40,7 +40,7 @@ public class gestionbdd {
 
     public static Connection defautConnect()
             throws ClassNotFoundException, SQLException {
-        return connectGeneralPostGres("localhost", 5439, "postgres", "postgres", "pass");
+        return connectGeneralPostGres("localhost", 5439, "postgres", "postgres", "emgu7747");
     }
 
     public static void menu(Connection con) throws SQLException {
@@ -755,8 +755,71 @@ public class gestionbdd {
             }
         }
     }
-
-    private static void Bilanutil(Connection con, int uti) throws SQLException {
+private ArrayList<Integer> catselect(Connection con,ArrayList<String> liste) throws SQLException{
+    ArrayList list = new ArrayList<Integer>() ;
+    ArrayList obj = new ArrayList<Integer>();
+    String cta ;
+   int inter ;
+    for (int i =0 ; i <= liste.size();){
+    cta = liste.get(i);
+    
+    
+    
+        try ( Statement st = con.createStatement()) {
+            String query = "select count(idc) from categorie where nom ='"+cta+"'";
+               try ( ResultSet tlu = st.executeQuery(query)) {
+                   tlu.next();
+                   inter = tlu.getInt(1);
+               }           
+              if (inter ==0 ){
+                  
+              } else {
+                 try ( Statement sst = con.createStatement()) {
+                     String querys = "select idc from categorie where nom ='"+cta+"'";
+                     try ( ResultSet tlu = sst.executeQuery(querys)) {
+                          tlu.next();
+                         
+                         list.add(tlu.getInt(1));
+                     }
+                     
+                     
+                 } 
+               
+                  
+                  
+                  
+                  
+                  
+              }          
+                          
+                          
+                          
+                          
+        }
+     for( i=0 ; i<= list.size();) {
+          try ( Statement stt = con.createStatement()) {    
+         String queri = "select ido from objets where categorie='"+list.get(i)+"'";
+         try ( ResultSet tlu = stt.executeQuery(queri)) {
+              while (tlu.next()) {
+                  obj.add(tlu.getInt(1));
+              }
+             
+         }
+         
+     
+        
+          }
+    
+        
+          }
+        
+    
+    
+    }
+        return obj;
+          }
+private static void Bilanutil(Connection con, int uti) throws SQLException {
+        
       
         try ( Statement st = con.createStatement()) {
             String query = """
@@ -923,4 +986,5 @@ public class gestionbdd {
 
         return datetime;
     }
+    
 }
