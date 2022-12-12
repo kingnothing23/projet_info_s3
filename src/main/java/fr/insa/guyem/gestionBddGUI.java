@@ -137,7 +137,7 @@ public class gestionBddGUI {
                     lDescription.setFont(Font.font("Montserra", FontWeight.MEDIUM, 10));
                     lDescription.setMaxWidth(140);
                     lDescription.setWrapText(true);
-                    Label lVendeur = new Label ("Vendu par : "+vendeur);
+                    Label lVendeur = new Label ("Vendu par : "+gestionBddGUI.returnNomUtilisateur(con, Integer.valueOf(vendeur)));
                     lVendeur.setFont(Font.font("Montserra", FontWeight.BOLD, 12));
 
                     
@@ -288,8 +288,32 @@ public class gestionBddGUI {
         }
     }
     
-    //A FAIRE : RETURN STRING DU NOM UTILISATEUR DEPUIS ID UTILISATEUR 
-    //A FAIRE : RETURN LISTE DES CATEGORIES SOUS FORME DE STRING
+    public static String returnNomUtilisateur(Connection con,int idUtilisateur)throws SQLException{
+        try ( PreparedStatement pst = con.prepareStatement(
+                "select nom,prenom from utilisateur where id = ?")) {
+            pst.setInt(1, idUtilisateur);
+            ResultSet res = pst.executeQuery();
+            res.next();
+            String nomUtilisateur = res.getString(1) +" "+ res.getString(2);
+            return nomUtilisateur;
+        }
+    }
+    
+    public static ArrayList<String> returnCategories(Connection con) throws SQLException{
+        try ( Statement st = con.createStatement()) {
+            String query = "select nom from categorie";
+            try ( ResultSet tlu = st.executeQuery(query)) {
+                ArrayList<String> listeCat = new ArrayList<String>();
+                while (tlu.next()){
+                    listeCat.add(tlu.getString(1));
+                    System.out.println(tlu.getString(1));
+                }
+                return listeCat;
+            }
+        }
+    }
+    
+    
     //A FAIRE : RETURN ID VENDEUR DEPUIS ID OBJET
-    //A FAIRE : ID UTILISATEUR AVEC ENCHERE LA PLUS HAUTE A PARTIR D'UN ID OBJET
+    //A FAIRE : ID UTILISATEUR QUI A L'ENCHERE LA PLUS HAUTE A PARTIR D'UN ID OBJET
 }

@@ -67,6 +67,9 @@ public class Login extends BorderPane{
                 int userId = gestionBddGUI.connectuser(con,
                         tMail.getText(),pPass.getText());
                 main.getInfoSession().setCurrentUserId(userId);
+                System.out.println(String.valueOf(userId));
+                main.getInfoSession().setCurrentUserName(gestionBddGUI.returnNomUtilisateur(con, userId));
+                
                 if (userId != -1){
                     main.setCenter(new Encheres(main));
                 }else{

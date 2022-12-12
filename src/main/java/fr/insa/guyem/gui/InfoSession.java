@@ -13,6 +13,7 @@ import java.sql.Connection;
 public class InfoSession {
     private int currentUserId;
     private Connection conBdd;
+    private String currentUserName;
     
     public void setConBdd(Connection conBdd){
         this.conBdd = conBdd;
@@ -28,5 +29,13 @@ public class InfoSession {
     
     public int getCurrentUserId(){
         return this.currentUserId;
+    }
+    
+    public void setCurrentUserName(String currentUserName){
+        this.currentUserName = currentUserName;
+    }
+    
+    public String getCurrentUserName(){
+        return this.currentUserName;
     }
 }

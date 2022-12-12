@@ -29,6 +29,7 @@ public class Encheres extends BorderPane{
     public Encheres (VueMain main) throws SQLException{
         Connection con =main.getInfoSession().getConBdd(); //Ref lien a la bdd
         
+        
         //Def Boutons utilisateur
         Button bDeco = new Button("Se déconnecter");
         bDeco.setStyle("-fx-background-color: #E1341E");
@@ -38,7 +39,9 @@ public class Encheres extends BorderPane{
         Button bEncheres = new Button ("Mes enchères");
         bEncheres.setFont(Font.font("Montserra",FontWeight.BOLD,14));
         VBox vbBoutonUtilisateur = new VBox(bEncheres,bVentes,bDeco);
-        TitledPane tpUtilisateur = new TitledPane("Utilisateur :\n"+Integer.toString(main.getInfoSession().getCurrentUserId()),vbBoutonUtilisateur);// Avoir méthode renvoie nom utilisateur depuis id
+        
+        TitledPane tpUtilisateur = new TitledPane("Utilisateur :\n"+
+                gestionBddGUI.returnNomUtilisateur(con,main.getInfoSession().getCurrentUserId()),vbBoutonUtilisateur);
         tpUtilisateur.setFont(Font.font("Montserra",FontWeight.BOLD,16));
         tpUtilisateur.setExpanded(false);
         Button bNouvelleVente = new Button("Créer une vente");
@@ -46,6 +49,11 @@ public class Encheres extends BorderPane{
         VBox vbRight = new VBox(tpUtilisateur,bNouvelleVente);
         this.setRight(vbRight);
         
+        ArrayList<String> listeCat = gestionBddGUI.returnCategories(con);
+        for (int i=0;i<listeCat.size();i++){
+            System.out.println(listeCat.get(i));
+        }
+        System.out.println();
         //Evenements boutons
         bDeco.setOnMouseClicked((t) -> {
                         main.setCenter(new PageAccueil(main));

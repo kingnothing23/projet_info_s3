@@ -115,6 +115,7 @@ public class NouvelUtilisateur extends VBox{
                         int userId = gestionBddGUI.connectuser(con,
                                 tEmail.getText(), pPass.getText());
                         main.getInfoSession().setCurrentUserId(userId);
+                        main.getInfoSession().setCurrentUserName(gestionBddGUI.returnNomUtilisateur(con, userId));
                         if (userId != -1) {
                             main.setCenter(new Encheres(main));
                         }
