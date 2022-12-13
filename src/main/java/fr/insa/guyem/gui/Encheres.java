@@ -64,9 +64,13 @@ public class Encheres extends BorderPane{
         });
         
         bNouvelleVente.setOnMouseClicked((t) -> {
-            this.setCenter(new NouvelleVente(main,this));
-            this.setLeft(null);
-            this.setTop(null);
+            try {
+                this.setLeft(null);
+                this.setTop(null);
+                this.setCenter(new NouvelleVente(main,this));
+            } catch (SQLException ex) {
+                Logger.getLogger(Encheres.class.getName()).log(Level.SEVERE, null, ex);
+            }
         });
    
         bVentes.setOnMouseClicked((t) -> {

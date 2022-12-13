@@ -8,8 +8,10 @@ import fr.insa.guyem.gestionBddGUI;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.collections.FXCollections;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -33,7 +35,7 @@ import javafx.scene.text.TextAlignment;
  * @author fears
  */
 public class NouvelleVente extends VBox{
-    public NouvelleVente(VueMain main,BorderPane mainEncheres){
+    public NouvelleVente(VueMain main,BorderPane mainEncheres) throws SQLException{
         Connection con =main.getInfoSession().getConBdd(); //Ref lien a la bdd
         
         GridPane gp = new GridPane();
@@ -67,7 +69,14 @@ public class NouvelleVente extends VBox{
         
         Label lCategorie = new Label("Catégorie de l'objet : ");
         gp.add(lCategorie, 0, 10);
-        ChoiceBox cbCategorie = new ChoiceBox(); //POUVOIR RECUPERER LES CATEGORIES SOUS FORME DE LISTE DE STRING
+        ArrayList<String> listeIdCat = gestionBddGUI.returnIdCategories(con);
+        ArrayList<String> listeNomsCat = new ArrayList<String>();
+        for (int i=0;i<listeIdCat.size();i++){
+            listeNomsCat.add(gestionBddGUI.returnNomCategorie(con, listeIdCat.get(i)));
+        }
+        
+        
+        ChoiceBox cbCategorie = new ChoiceBox(FXCollections.observableArrayList(listeNomsCat));
         gp.add(cbCategorie,1,10);
         TextField tNom = new TextField();
         gp.add(tNom,1,2);
@@ -129,8 +138,8 @@ public class NouvelleVente extends VBox{
                 LocalDateTime ldtDateDebut = gestionBddGUI.convertDateTime(tDateDebut.getText(),tHourDebut.getText());
                 LocalDateTime ldtDateFin = gestionBddGUI.convertDateTime(tDateFin.getText(),tHourFin.getText());
                 gestionBddGUI.createObjets(con, tNom.getText(), Double.parseDouble(tPrixInitial.getText()), tPetitedesc.getText(),
-                        tLonguedesc.getText(), 3,main.getInfoSession().getCurrentUserId() , ldtDateDebut, ldtDateFin);
-                gestionBddGUI.tousLesObjets(con, mainEncheres,main,Integer.toString(main.getInfoSession().getCurrentUserId()));
+                        tLonguedesc.getText(),Integer.valueOf(listeIdCat.get(cbCategorie.getSelectionModel().getSelectedIndex())),main.getInfoSession().getCurrentUserId() , ldtDateDebut, ldtDateFin);
+                main.setCenter(new Encheres(main));
             } catch (SQLException ex) {
                 Logger.getLogger(NouvelleVente.class.getName()).log(Level.SEVERE, null, ex);
             }

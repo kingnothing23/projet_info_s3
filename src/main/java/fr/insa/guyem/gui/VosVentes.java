@@ -64,9 +64,16 @@ public class VosVentes extends BorderPane{
         bDeco.setOnMouseClicked((t) -> {
             main.setCenter(new PageAccueil(main));
         });
+        
         bNouvelleVente.setOnMouseClicked((t) -> {
-            this.setCenter(new NouvelleVente(main,this));
-            this.setTop(null);
+            try {
+                
+                this.setTop(null);
+                this.setLeft(null);
+                this.setCenter(new NouvelleVente(main,this));
+            } catch (SQLException ex) {
+                Logger.getLogger(VosVentes.class.getName()).log(Level.SEVERE, null, ex);
+            }
         });
         bVentes.setOnMouseClicked((t) -> {
             try {

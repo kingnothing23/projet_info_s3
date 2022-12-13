@@ -203,7 +203,7 @@ public class gestionBddGUI {
             for (int i=1;i<listeIdCat.size();i++){
                 finQuery = finQuery+ " or categorie = "+ listeIdCat.get(i);
             }
-            String query = "select * from objets where categorie = "+finQuery;
+            String query = "select * from objets where (categorie = "+finQuery+" )and vendeur <> "+main.getInfoSession().getCurrentUserId();
             affichageQuery(con,mainEncheres,main,query);
 
         }else{
@@ -414,7 +414,7 @@ public class gestionBddGUI {
     
     
     
-    //A FAIRE : RETURN ID VENDEUR DEPUIS ID OBJET
-    //A FAIRE : ID UTILISATEUR QUI A L'ENCHERE LA PLUS HAUTE A PARTIR D'UN ID OBJET
-    //A FAIRE : COMMENT RECUP ID CATEGORIE A PARTIR D'UNE CATEGORIE SELECTIONNEE
+    //ID UTILISATEUR QUI A L ENCHERE LA PLUS HAUTE 
+    //FAIRE PAGE VOS ENCHERES
+    //GESTION DU TEMPS 
 }
