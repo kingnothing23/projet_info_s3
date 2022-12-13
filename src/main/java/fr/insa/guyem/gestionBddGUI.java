@@ -20,11 +20,15 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -109,7 +113,7 @@ public class gestionBddGUI {
     }
    
     //permet de creer la colonne des offres des objets, en fonction d'une requete sql
-    public static void affichageQuery(Connection con,Encheres mainEncheres,VueMain main,String query) throws SQLException {
+    public static void affichageQuery(Connection con,BorderPane mainEncheres,VueMain main,String query) throws SQLException {
         try ( Statement st = con.createStatement()) {
 
             try ( ResultSet tlu = st.executeQuery(query)) {
@@ -169,6 +173,8 @@ public class gestionBddGUI {
                     
                     pOffreSingle.setOnMouseClicked((t) -> {
                         mainEncheres.setCenter(new PageObjet(main,mainEncheres,id,nom,courtedescri,longuedescri,prixActuel));
+                        mainEncheres.setTop(null);
+                        mainEncheres.setLeft(null);
                     });
                     listePane.add(pOffreSingle);
                     
@@ -190,7 +196,7 @@ public class gestionBddGUI {
         }
     }
 
-    public static void filtreCategories (Connection con, VueMain main, Encheres mainEncheres, ArrayList<String> listeIdCat) throws SQLException {
+    public static void filtreCategories (Connection con, VueMain main, BorderPane mainEncheres, ArrayList<String> listeIdCat) throws SQLException {
         String finQuery="";
         if (listeIdCat.size()>0){
             finQuery = finQuery+listeIdCat.get(0);
@@ -207,8 +213,8 @@ public class gestionBddGUI {
     }
     
     //affiche tous les objets, notamment quand on arrive sur la session
-    public static void tousLesObjets(Connection con, Encheres mainEncheres,VueMain main)throws SQLException{
-        String query = "select * from objets";
+    public static void tousLesObjets(Connection con, BorderPane mainEncheres,VueMain main,String idUtilisateur)throws SQLException{
+        String query = "select * from objets where vendeur <>" +idUtilisateur;
         affichageQuery(con,mainEncheres,main,query);
     }
     
@@ -341,6 +347,70 @@ public class gestionBddGUI {
         }
     }
     
+    public static void creationFiltre(VueMain main,BorderPane mainEncheres,Connection con) throws SQLException{
+        Label lFiltre = new Label("Filtre de catégories :");
+        Button bAppliquer = new Button("Appliquer les filtres");
+        Button bToutSelectionner = new Button("Tout sélectionner");
+        Button bToutDeselectionner = new Button("Tout déselectionner");
+        bAppliquer.setFont(Font.font("Montserra",FontWeight.BOLD,14));
+        lFiltre.setFont(Font.font("Montserra",FontWeight.BOLD,14));
+        
+        VBox vbFiltre = new VBox(lFiltre);
+        ArrayList<String> listeCatSelected = new ArrayList<String>();
+        ArrayList<String> listeIdCatExisting = gestionBddGUI.returnIdCategories(con);
+        ArrayList<RadioButton> listeRbCat = new ArrayList<RadioButton>();
+        //ajout des radiobuttons correspondants a toutes les categories et definitions de leur comportement
+        for (int i=0;i<listeIdCatExisting.size();i++){
+            String idc = listeIdCatExisting.get(i);
+            RadioButton rb=new RadioButton(gestionBddGUI.returnNomCategorie(con, idc));
+            listeRbCat.add(rb);
+            vbFiltre.getChildren().add(rb);
+            rb.setSelected(true);
+            listeCatSelected.add(idc);
+            //Gestion Selection par rapport au filtre
+            rb.setOnMouseClicked((t) -> {
+                if (rb.isSelected()){
+                    listeCatSelected.add(idc);
+                }else{
+                    listeCatSelected.remove(idc);
+                }
+            });
+        }
+        
+        
+        vbFiltre.getChildren().add(bToutSelectionner);
+        vbFiltre.getChildren().add(bToutDeselectionner);
+        vbFiltre.getChildren().add(bAppliquer);
+        vbFiltre.setSpacing(5);
+        vbFiltre.setPadding(new Insets(5));
+        mainEncheres.setLeft(vbFiltre);
+        
+        bAppliquer.setOnMouseClicked((t) -> {
+            try {
+                gestionBddGUI.filtreCategories(con, main, mainEncheres, listeCatSelected);
+            } catch (SQLException ex) {
+                Logger.getLogger(Encheres.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
+        
+        bToutSelectionner.setOnMouseClicked((t) -> {
+            listeCatSelected.clear();
+            for (int i=0;i<listeRbCat.size();i++){
+                listeRbCat.get(i).setSelected(true);
+            }
+            for (int i=0;i<listeRbCat.size();i++){
+                listeCatSelected.add(listeIdCatExisting.get(i));
+            } 
+            
+        });
+        
+        bToutDeselectionner.setOnMouseClicked((t) -> {
+            for (int i=0;i<listeRbCat.size();i++){
+                listeRbCat.get(i).setSelected(false);
+            }
+            listeCatSelected.clear();
+        });
+    }
     
     
     

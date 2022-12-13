@@ -21,6 +21,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -32,7 +33,7 @@ import javafx.scene.text.TextAlignment;
  * @author fears
  */
 public class NouvelleVente extends VBox{
-    public NouvelleVente(VueMain main,Encheres mainEncheres){
+    public NouvelleVente(VueMain main,BorderPane mainEncheres){
         Connection con =main.getInfoSession().getConBdd(); //Ref lien a la bdd
         
         GridPane gp = new GridPane();
@@ -117,7 +118,7 @@ public class NouvelleVente extends VBox{
         
         bHome.setOnAction((t) -> {
             try {
-                gestionBddGUI.tousLesObjets(con, mainEncheres,main);
+                main.setCenter(new Encheres(main));
             } catch (SQLException ex) {
                 Logger.getLogger(NouvelleVente.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -129,7 +130,7 @@ public class NouvelleVente extends VBox{
                 LocalDateTime ldtDateFin = gestionBddGUI.convertDateTime(tDateFin.getText(),tHourFin.getText());
                 gestionBddGUI.createObjets(con, tNom.getText(), Double.parseDouble(tPrixInitial.getText()), tPetitedesc.getText(),
                         tLonguedesc.getText(), 3,main.getInfoSession().getCurrentUserId() , ldtDateDebut, ldtDateFin);
-                gestionBddGUI.tousLesObjets(con, mainEncheres,main);
+                gestionBddGUI.tousLesObjets(con, mainEncheres,main,Integer.toString(main.getInfoSession().getCurrentUserId()));
             } catch (SQLException ex) {
                 Logger.getLogger(NouvelleVente.class.getName()).log(Level.SEVERE, null, ex);
             }

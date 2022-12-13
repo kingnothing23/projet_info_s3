@@ -20,6 +20,7 @@ import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -36,7 +37,7 @@ public class PageObjet extends ScrollPane {
     
     public float nouveauPrixActuel;
     
-    public PageObjet (VueMain main, Encheres mainEncheres,int idObjet,String nomObjet,String petiteDescri,String longueDescri
+    public PageObjet (VueMain main, BorderPane mainEncheres,int idObjet,String nomObjet,String petiteDescri,String longueDescri
     ,float prixActuel){
         Connection con =main.getInfoSession().getConBdd(); //Ref lien a la bdd
         
@@ -114,7 +115,7 @@ public class PageObjet extends ScrollPane {
         //Gestion des evenements
         bHome.setOnAction((t) -> {
             try {
-                gestionBddGUI.tousLesObjets(con, mainEncheres,main);
+                main.setCenter(new Encheres(main));
             } catch (SQLException ex) {
                 Logger.getLogger(NouvelleVente.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -155,7 +156,7 @@ public class PageObjet extends ScrollPane {
         });
     }
     
-    public void refreshPage(VueMain main, Encheres mainEncheres,int idObjet,String nomObjet,String petiteDescri,String longueDescri
+    public void refreshPage(VueMain main, BorderPane mainEncheres,int idObjet,String nomObjet,String petiteDescri,String longueDescri
     ,float nouveauPrixActuel){
         
         mainEncheres.setCenter(new PageObjet(main,mainEncheres,idObjet,nomObjet,petiteDescri,longueDescri,nouveauPrixActuel));
