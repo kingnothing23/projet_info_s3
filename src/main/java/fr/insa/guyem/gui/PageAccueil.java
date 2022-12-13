@@ -49,6 +49,8 @@ public class PageAccueil extends BorderPane{
                 Logger.getLogger(PageAccueil.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
+        
+        
     }
     
 }

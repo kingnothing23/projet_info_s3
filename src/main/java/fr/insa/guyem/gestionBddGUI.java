@@ -20,8 +20,10 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Scanner;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -49,7 +51,7 @@ public class gestionBddGUI {
     //Permet de se connecter a la Bdd de base
     public static Connection defautConnect() 
             throws ClassNotFoundException, SQLException {
-        return connectGeneralPostGres("localhost", 5439, "postgres", "postgres", "emgu7747");
+        return connectGeneralPostGres("localhost", 5439, "postgres", "postgres", "pass");
     }
 
     //Permet de se connecter avec un utilisateur en utilisant le mdp et le mail, renvoi l'id de l'utilisateur
@@ -173,6 +175,7 @@ public class gestionBddGUI {
                     
                 }
                 ScrollPane scrollableOffers = new ScrollPane(); //déclaration Scrollpane et VBox qui contiennent les offres
+                scrollableOffers.setPadding(new Insets(10));
                 VBox vbOffresFinal = new VBox();
                 for (int i=0;i<listePane.size();i++){
                     vbOffresFinal.getChildren().add(listePane.get(i)); //remplissage des offres dans le scrollpane
@@ -186,15 +189,23 @@ public class gestionBddGUI {
             }
         }
     }
-   public static void objetsfiltres(Connection con,Encheres mainEncheres,VueMain main,ArrayList<Integer> obj) throws SQLException {
-      String query;
-      int ier ;
-       for(int i =0 ; i <= obj.size() ;){
-           ier = obj.get(i);
-           query = "select * from objets where ido='"+ier+"'";
-           affichageQuery(con, mainEncheres, main, query);
-       }
-   }
+
+    public static void filtreCategories (Connection con, VueMain main, Encheres mainEncheres, ArrayList<String> listeIdCat) throws SQLException {
+        String finQuery="";
+        if (listeIdCat.size()>0){
+            finQuery = finQuery+listeIdCat.get(0);
+            for (int i=1;i<listeIdCat.size();i++){
+                finQuery = finQuery+ " or categorie = "+ listeIdCat.get(i);
+            }
+            String query = "select * from objets where categorie = "+finQuery;
+            affichageQuery(con,mainEncheres,main,query);
+
+        }else{
+            affichageQuery(con,mainEncheres,main,"select * from objets where 1=0");
+        }
+        
+    }
+    
     //affiche tous les objets, notamment quand on arrive sur la session
     public static void tousLesObjets(Connection con, Encheres mainEncheres,VueMain main)throws SQLException{
         String query = "select * from objets";
@@ -307,21 +318,33 @@ public class gestionBddGUI {
         }
     }
     
-    public static ArrayList<String> returnCategories(Connection con) throws SQLException{
+    public static ArrayList<String> returnIdCategories(Connection con) throws SQLException{
         try ( Statement st = con.createStatement()) {
-            String query = "select nom from categorie";
+            String query = "select idc from categorie";
             try ( ResultSet tlu = st.executeQuery(query)) {
                 ArrayList<String> listeCat = new ArrayList<String>();
                 while (tlu.next()){
                     listeCat.add(tlu.getString(1));
-                    System.out.println(tlu.getString(1));
                 }
                 return listeCat;
             }
         }
     }
     
+    public static String returnNomCategorie(Connection con, String id) throws SQLException{
+        try ( Statement st = con.createStatement()) {
+            String query = "select nom from categorie where idc="+id;
+            try ( ResultSet tlu = st.executeQuery(query)) {
+                tlu.next();
+                return tlu.getString(1);
+            }
+        }
+    }
+    
+    
+    
     
     //A FAIRE : RETURN ID VENDEUR DEPUIS ID OBJET
     //A FAIRE : ID UTILISATEUR QUI A L'ENCHERE LA PLUS HAUTE A PARTIR D'UN ID OBJET
+    //A FAIRE : COMMENT RECUP ID CATEGORIE A PARTIR D'UNE CATEGORIE SELECTIONNEE
 }

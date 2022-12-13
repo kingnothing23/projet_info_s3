@@ -8,8 +8,14 @@ import fr.insa.guyem.gestionBddGUI;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javafx.event.EventType;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.BorderPane;
@@ -49,19 +55,81 @@ public class Encheres extends BorderPane{
         VBox vbRight = new VBox(tpUtilisateur,bNouvelleVente);
         this.setRight(vbRight);
         
-        ArrayList<String> listeCat = gestionBddGUI.returnCategories(con);
-        for (int i=0;i<listeCat.size();i++){
-            System.out.println(listeCat.get(i));
+        
+        Label lFiltre = new Label("Filtre de catégories :");
+        Button bAppliquer = new Button("Appliquer les filtres");
+        Button bToutSelectionner = new Button("Tout sélectionner");
+        Button bToutDeselectionner = new Button("Tout déselectionner");
+        bAppliquer.setFont(Font.font("Montserra",FontWeight.BOLD,14));
+        lFiltre.setFont(Font.font("Montserra",FontWeight.BOLD,14));
+        
+        VBox vbFiltre = new VBox(lFiltre);
+        ArrayList<String> listeCatSelected = new ArrayList<String>();
+        ArrayList<String> listeIdCatExisting = gestionBddGUI.returnIdCategories(con);
+        ArrayList<RadioButton> listeRbCat = new ArrayList<RadioButton>();
+        
+        //ajout des radiobuttons correspondants a toutes les categories et definitions de leur comportement
+        for (int i=0;i<listeIdCatExisting.size();i++){
+            String idc = listeIdCatExisting.get(i);
+            RadioButton rb=new RadioButton(gestionBddGUI.returnNomCategorie(con, idc));
+            listeRbCat.add(rb);
+            vbFiltre.getChildren().add(rb);
+            rb.setSelected(true);
+            listeCatSelected.add(idc);
+            //Gestion Selection par rapport au filtre
+            rb.setOnMouseClicked((t) -> {
+                if (rb.isSelected()){
+                    listeCatSelected.add(idc);
+                }else{
+                    listeCatSelected.remove(idc);
+                }
+            });
         }
-        System.out.println();
+        
+        
+        vbFiltre.getChildren().add(bToutSelectionner);
+        vbFiltre.getChildren().add(bToutDeselectionner);
+        vbFiltre.getChildren().add(bAppliquer);
+        vbFiltre.setSpacing(5);
+        vbFiltre.setPadding(new Insets(5));
+        this.setLeft(vbFiltre);
+        
+        
+        
         //Evenements boutons
         bDeco.setOnMouseClicked((t) -> {
-                        main.setCenter(new PageAccueil(main));
-                    });
+            main.setCenter(new PageAccueil(main));
+        });
         
         bNouvelleVente.setOnMouseClicked((t) -> {
-                        this.setCenter(new NouvelleVente(main,this));
-                    });
+            this.setCenter(new NouvelleVente(main,this));
+        });
+        
+        bAppliquer.setOnMouseClicked((t) -> {
+            try {
+                gestionBddGUI.filtreCategories(con, main, this, listeCatSelected);
+            } catch (SQLException ex) {
+                Logger.getLogger(Encheres.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
+        
+        bToutSelectionner.setOnMouseClicked((t) -> {
+            listeCatSelected.clear();
+            for (int i=0;i<listeRbCat.size();i++){
+                listeRbCat.get(i).setSelected(true);
+            }
+            for (int i=0;i<listeRbCat.size();i++){
+                listeCatSelected.add(listeIdCatExisting.get(i));
+            } 
+            
+        });
+        
+        bToutDeselectionner.setOnMouseClicked((t) -> {
+            for (int i=0;i<listeRbCat.size();i++){
+                listeRbCat.get(i).setSelected(false);
+            }
+            listeCatSelected.clear();
+        });
         
         //Affichage de tous les objets du site
         gestionBddGUI.tousLesObjets(con,this,main);

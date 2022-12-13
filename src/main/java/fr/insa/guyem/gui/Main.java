@@ -36,7 +36,7 @@ public class Main extends Application {
     public void start(Stage stage) throws SQLException{
         sc = new Scene(new VueMain());
 //        Scene sc = new Scene(new TestFx());
-        stage.setWidth(800);
+        stage.setWidth(1000);
         stage.setHeight(600);
         stage.setScene(sc);
         stage.setTitle("Ebay.fr");

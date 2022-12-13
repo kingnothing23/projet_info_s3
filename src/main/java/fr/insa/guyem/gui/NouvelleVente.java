@@ -128,7 +128,7 @@ public class NouvelleVente extends VBox{
                 LocalDateTime ldtDateDebut = gestionBddGUI.convertDateTime(tDateDebut.getText(),tHourDebut.getText());
                 LocalDateTime ldtDateFin = gestionBddGUI.convertDateTime(tDateFin.getText(),tHourFin.getText());
                 gestionBddGUI.createObjets(con, tNom.getText(), Double.parseDouble(tPrixInitial.getText()), tPetitedesc.getText(),
-                        tLonguedesc.getText(), 1,main.getInfoSession().getCurrentUserId() , ldtDateDebut, ldtDateFin);
+                        tLonguedesc.getText(), 3,main.getInfoSession().getCurrentUserId() , ldtDateDebut, ldtDateFin);
                 gestionBddGUI.tousLesObjets(con, mainEncheres,main);
             } catch (SQLException ex) {
                 Logger.getLogger(NouvelleVente.class.getName()).log(Level.SEVERE, null, ex);
