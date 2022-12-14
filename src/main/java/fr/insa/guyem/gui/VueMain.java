@@ -4,7 +4,6 @@
  */
 package fr.insa.guyem.gui;
 
-import fr.insa.guyem.gestionBddGUI;
 import java.sql.SQLException;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;

@@ -2,10 +2,14 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package fr.insa.guyem;
+package fr.insa.guyem.gui;
 
 import fr.insa.guyem.gui.Encheres;
+import fr.insa.guyem.gui.NouvelleVente;
+import fr.insa.guyem.gui.PageAccueil;
+import fr.insa.guyem.gui.PageMesEncheres;
 import fr.insa.guyem.gui.PageObjet;
+import fr.insa.guyem.gui.VosVentes;
 import fr.insa.guyem.gui.VueMain;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -14,10 +18,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Month;
+import java.time.Period;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -28,6 +36,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TitledPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -151,16 +160,16 @@ public class gestionBddGUI {
                     Label lMessagePrix = new Label("Enchère la plus haute\nactuellement :");
                     lPrix.setFont(Font.font("Montserra", FontWeight.EXTRA_BOLD, 26));
                     lMessagePrix.setFont(Font.font("Montserra", FontWeight.BOLD, 10));
-                    Label lAcheteurPlusHaut = new Label("");
-                    lAcheteurPlusHaut.setFont(Font.font("Montserra", FontWeight.BOLD, 10));
+                    Label lTempsRestant = new Label("Il reste\n"+gestionBddGUI.stringTempsRestant(convertStringToDateTime(fin)));
+                    lTempsRestant.setFont(Font.font("Montserra", FontWeight.BOLD, 8));
                     
                     if (main.getInfoSession().getCurrentUserId() == Integer.parseInt(vendeur)){
-                        lAcheteurPlusHaut.setText("Vous êtes le vendeur \nde cet objet");
+                        lVendeur.setText("Vous êtes le vendeur \nde cet objet");
                     }
                     
                     
                     VBox vb1 = new VBox(lNom, lDescription,lVendeur);
-                    VBox vb2 = new VBox(lMessagePrix,lPrix,lAcheteurPlusHaut);
+                    VBox vb2 = new VBox(lMessagePrix,lPrix,lTempsRestant);
                     vb1.setLayoutX(15);
                     vb1.setSpacing(5);
                     vb2.setLayoutX(200);
@@ -196,6 +205,7 @@ public class gestionBddGUI {
         }
     }
 
+    //Creation du filtre des categories
     public static void filtreCategories (Connection con, VueMain main, BorderPane mainEncheres, ArrayList<String> listeIdCat) throws SQLException {
         String finQuery="";
         if (listeIdCat.size()>0){
@@ -210,6 +220,55 @@ public class gestionBddGUI {
             affichageQuery(con,mainEncheres,main,"select * from objets where 1=0");
         }
         
+    }
+    
+    //Creation du bandeau utilisateur
+    public static void bandeauUtilisateur (Connection con,VueMain main,BorderPane mainPage) throws SQLException{
+        //Def Boutons utilisateur
+        Button bDeco = new Button("Se déconnecter");
+        bDeco.setStyle("-fx-background-color: #E1341E");
+        bDeco.setFont(Font.font("Montserra",FontWeight.BOLD,14));
+        Button bVentes = new Button ("Mes ventes");
+        bVentes.setFont(Font.font("Montserra",FontWeight.BOLD,14));
+        Button bEncheres = new Button ("Mes enchères");
+        bEncheres.setFont(Font.font("Montserra",FontWeight.BOLD,14));
+        VBox vbBoutonUtilisateur = new VBox(bEncheres,bVentes,bDeco);
+        
+        TitledPane tpUtilisateur = new TitledPane("Utilisateur :\n"+
+                gestionBddGUI.returnNomUtilisateur(con,main.getInfoSession().getCurrentUserId()),vbBoutonUtilisateur);
+        tpUtilisateur.setFont(Font.font("Montserra",FontWeight.BOLD,16));
+        tpUtilisateur.setExpanded(false);
+        Button bNouvelleVente = new Button("Créer une vente");
+        bNouvelleVente.setFont(Font.font("Montserra",FontWeight.BOLD,16));
+        VBox vbRight = new VBox(tpUtilisateur,bNouvelleVente);
+        mainPage.setRight(vbRight);
+        
+        //Evenements boutons
+        bDeco.setOnMouseClicked((t) -> {
+            main.setCenter(new PageAccueil(main));
+        });
+        
+        bNouvelleVente.setOnMouseClicked((t) -> {
+            try {
+                mainPage.setLeft(null);
+                mainPage.setTop(null);
+                mainPage.setCenter(new NouvelleVente(main,mainPage));
+            } catch (SQLException ex) {
+                Logger.getLogger(Encheres.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
+   
+        bVentes.setOnMouseClicked((t) -> {
+            try {
+                main.setCenter(new VosVentes(main,con));
+            } catch (SQLException ex) {
+                Logger.getLogger(Encheres.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
+        
+        bEncheres.setOnMouseClicked((t) -> {
+            main.setCenter(new PageMesEncheres());
+        });
     }
     
     //affiche tous les objets, notamment quand on arrive sur la session
@@ -259,6 +318,12 @@ public class gestionBddGUI {
         datetime = date.atTime(time);
 
         return datetime;
+    }
+    
+    public static LocalDateTime convertStringToDateTime(String enteredLocalDateTime){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); 
+        LocalDateTime dateTime = LocalDateTime.parse(enteredLocalDateTime, formatter);
+        return dateTime;
     }
     
     //Renvoi le montant de l'enchère la plus haute sur un certain objet:
@@ -412,6 +477,50 @@ public class gestionBddGUI {
         });
     }
     
+    public static long tempsRestantMillis(LocalDateTime ldtFin){
+        long resultat = ChronoUnit.MILLIS.between(LocalDateTime.now(), ldtFin);
+        return resultat;
+        
+    }
+    
+    public static String stringTempsRestant(LocalDateTime ldtFin){
+  
+        LocalDateTime tempDateTime = LocalDateTime.now();
+        String resultat ="";
+        
+        long years = tempDateTime.until(ldtFin, ChronoUnit.YEARS);
+        tempDateTime = tempDateTime.plusYears(years);
+        if (years!=0){
+            resultat = resultat+years+" année(s) ";
+        }
+        long months = tempDateTime.until(ldtFin, ChronoUnit.MONTHS);
+        tempDateTime = tempDateTime.plusMonths(months);
+        if (years!=0 || months!=0){
+                    resultat = resultat+months+" mois ";
+                }
+        long days = tempDateTime.until(ldtFin, ChronoUnit.DAYS);
+        tempDateTime = tempDateTime.plusDays(days);
+        if (years!=0 || months!=0 || days!=0){
+            resultat = resultat+days+" jour(s) ";
+        }
+        long hours = tempDateTime.until(ldtFin, ChronoUnit.HOURS);
+        tempDateTime = tempDateTime.plusHours(hours);
+        if (years!=0 || months!=0 || days!=0 || hours!=0){
+            resultat = resultat+hours+" heure(s)\n";
+        }
+        long minutes = tempDateTime.until(ldtFin, ChronoUnit.MINUTES);
+        tempDateTime = tempDateTime.plusMinutes(minutes);
+        if (years!=0 || months!=0 || days!=0 || hours!=0 || minutes!=0){
+            resultat = resultat+minutes+" minute(s) ";
+        }
+        long seconds = tempDateTime.until(ldtFin, ChronoUnit.SECONDS);
+        tempDateTime = tempDateTime.plusSeconds(seconds);
+        if (years!=0 || months!=0 || days!=0 || hours!=0 || minutes!=0 || seconds!=0){
+            resultat = resultat+seconds+" seconde(s) ";
+        }
+        
+        return resultat;
+    }
     
     
     //ID UTILISATEUR QUI A L ENCHERE LA PLUS HAUTE 

@@ -4,7 +4,6 @@
  */
 package fr.insa.guyem.gui;
 
-import fr.insa.guyem.gestionBddGUI;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
