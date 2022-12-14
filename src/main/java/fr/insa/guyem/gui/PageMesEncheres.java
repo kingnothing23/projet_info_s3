@@ -5,12 +5,13 @@
 package fr.insa.guyem.gui;
 
 import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.BorderPane;
 
 /**
  *
  * @author fears
  */
-public class PageMesEncheres extends ScrollPane{
+public class PageMesEncheres extends BorderPane{
     public PageMesEncheres() {
         
     }

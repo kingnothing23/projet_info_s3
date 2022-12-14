@@ -134,8 +134,13 @@ public class NouvelleVente extends VBox{
         
         tbCreationVente.setOnAction((t) -> {
             try {
+                
                 LocalDateTime ldtDateDebut = gestionBddGUI.convertDateTime(tDateDebut.getText(),tHourDebut.getText());
                 LocalDateTime ldtDateFin = gestionBddGUI.convertDateTime(tDateFin.getText(),tHourFin.getText());
+                
+                if (gestionBddGUI.tempsRestantMillis(ldtDateFin)<0){
+                    System.out.println("ERREUR A GERER");
+                }
                 gestionBddGUI.createObjets(con, tNom.getText(), Double.parseDouble(tPrixInitial.getText()), tPetitedesc.getText(),
                         tLonguedesc.getText(),Integer.valueOf(listeIdCat.get(cbCategorie.getSelectionModel().getSelectedIndex())),main.getInfoSession().getCurrentUserId() , ldtDateDebut, ldtDateFin);
                 main.setCenter(new Encheres(main));

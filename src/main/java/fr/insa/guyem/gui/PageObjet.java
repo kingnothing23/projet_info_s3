@@ -96,7 +96,6 @@ public class PageObjet extends ScrollPane {
         //Creation bouton retour et ajout au rendu final de la page
         Button bHome = new Button("Retour au tableau des ventes");
         Button bRefresh = new Button("Rafraichir la page");
-        new Image(nomObjet);
         ImageView view = new ImageView (new Image(getClass().getResourceAsStream("home2.png")));
         ImageView view2 = new ImageView (new Image(getClass().getResourceAsStream("refreshIcon.png")));
         view.setFitHeight(50);

@@ -130,7 +130,7 @@ public class gestionBddGUI {
                 // ici, on veut lister toutes les lignes, d'où le while
                 ArrayList<Pane> listePane = new ArrayList<>();
                 while (tlu.next()) {
-
+                    
                     int id = tlu.getInt("ido");
                     // ou par son numéro (la première colonne a le numéro 1)
                     String nom = tlu.getString(2);
@@ -143,7 +143,9 @@ public class gestionBddGUI {
                     String fin = tlu.getString(9);
                     float prixActuel = priceActual(con,id);
 
-                    
+                    if (gestionBddGUI.tempsRestantMillis(gestionBddGUI.convertStringToDateTime(fin))<0){
+                        continue;
+                    }
                     Label lNom = new Label(nom);
                     lNom.setFont(Font.font("Montserra", FontWeight.BOLD, 20));
                     lNom.setMaxWidth(180);
@@ -233,6 +235,7 @@ public class gestionBddGUI {
         Button bEncheres = new Button ("Mes enchères");
         bEncheres.setFont(Font.font("Montserra",FontWeight.BOLD,14));
         VBox vbBoutonUtilisateur = new VBox(bEncheres,bVentes,bDeco);
+        vbBoutonUtilisateur.setSpacing(6);
         
         TitledPane tpUtilisateur = new TitledPane("Utilisateur :\n"+
                 gestionBddGUI.returnNomUtilisateur(con,main.getInfoSession().getCurrentUserId()),vbBoutonUtilisateur);
