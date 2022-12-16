@@ -40,7 +40,7 @@ public class gestionbdd {
 
     public static Connection defautConnect()
             throws ClassNotFoundException, SQLException {
-        return connectGeneralPostGres("localhost", 5439, "postgres", "postgres", "pass");
+        return connectGeneralPostGres("localhost", 5439, "postgres", "postgres", "emgu7747");
     }
 
     public static void menu(Connection con) throws SQLException {
@@ -59,6 +59,7 @@ public class gestionbdd {
             System.out.println("9) bilan utilisateur donné");
             System.out.println("10) ajouter une categorie");
             System.out.println("11) afficher les categories ");
+            System.out.println("12) filtrer les objets par categorie");
             System.out.println("0) quitter");
             System.out.println("Votre choix ?");
             rep = Lire.i();
@@ -124,7 +125,12 @@ public class gestionbdd {
                 } else if (rep == 11) {
                     affichecategorie(con);
 
-                }
+                }  else if (rep == 12) {
+                   ArrayList<Integer>Liste =  catselect(con);
+                   if (Liste.size() != 0){
+                   catsearch(con,Liste);}
+                   
+                }          
 
             } catch (SQLException ex) {
                 throw new Error(ex);
@@ -755,53 +761,68 @@ public class gestionbdd {
             }
         }
     }
-private ArrayList<Integer> catselect(Connection con,ArrayList<String> liste) throws SQLException{
-    ArrayList list = new ArrayList<Integer>() ;
+    private static ArrayList<Integer> catselect(Connection con) throws SQLException{
+        ArrayList<Integer> liste = new ArrayList<Integer>();
+        try ( Statement st = con.createStatement()) {
+         String query ="select * from categorie";
+            try ( ResultSet tlu = st.executeQuery(query)) {
+               while (tlu.next()) {
+               int idc = tlu.getInt(1);
+               String nom = tlu.getString(2);
+                   System.out.println("id "+idc+" nom: "+nom);
+                   
+               }
+            }
+            
+        }
+        int yesno=-1;
+        System.out.println("entrez l'id des categorie que vous souhaiter selectionnée (tapez 0 pour mettre fin à la selection ");
+        yesno=Lire.i();
+        while (yesno!=0){
+          liste.add(yesno);
+            System.out.print("catégorie suivante :");
+                yesno=Lire.i();
+            
+            
+            
+        }
+        if (liste!= null){
+           return liste; 
+        }else {
+        return liste;}
+        
+        
+    }
+    
+    
+private static void catsearch(Connection con,ArrayList<Integer> liste) throws SQLException{
+    
     ArrayList obj = new ArrayList<Integer>();
     String cta ;
    int inter ;
-    for (int i =0 ; i <= liste.size();){
-    cta = liste.get(i);
+   int i ; 
     
     
     
-        try ( Statement st = con.createStatement()) {
-            String query = "select count(idc) from categorie where nom ='"+cta+"'";
-               try ( ResultSet tlu = st.executeQuery(query)) {
-                   tlu.next();
-                   inter = tlu.getInt(1);
-               }           
-              if (inter ==0 ){
-                  
-              } else {
-                 try ( Statement sst = con.createStatement()) {
-                     String querys = "select idc from categorie where nom ='"+cta+"'";
-                     try ( ResultSet tlu = sst.executeQuery(querys)) {
-                          tlu.next();
-                         
-                         list.add(tlu.getInt(1));
-                     }
-                     
-                     
-                 } 
-               
-                  
-                  
-                  
-                  
-                  
-              }          
-                          
-                          
-                          
-                          
-        }
-     for( i=0 ; i<= list.size();) {
+    System.out.println(liste.size());
+        
+     for( i=0 ; i< liste.size();) {
           try ( Statement stt = con.createStatement()) {    
-         String queri = "select ido from objets where categorie='"+list.get(i)+"'";
+         String queri = "select * from objets where categorie='"+liste.get(i)+"'";
          try ( ResultSet tlu = stt.executeQuery(queri)) {
-              while (tlu.next()) {
-                  obj.add(tlu.getInt(1));
+              while (tlu.next()==true) {
+                 String nom = tlu.getString(2);
+                    String petitedescri = tlu.getString(3);
+                    String longuedescri =tlu.getString(4);
+                    String prixbase = tlu.getString(5);
+                    String categorie = tlu.getString(6);
+                    String vendeur = tlu.getString(7);
+                    String debut = tlu.getString(8);
+                    String fin = tlu.getString(9);
+                    int id = tlu.getInt("ido");
+                    System.out.println(id + " : " + nom + " prix(" + prixbase + ") vendeur :" + vendeur + " petite description : " + petitedescri + " ,longue description : " +
+                            longuedescri +", debut de l'enchere :" + debut + ", fin de l'enchere :" + fin+"categorie"+ categorie);
+                         
               }
              
          }
@@ -816,8 +837,8 @@ private ArrayList<Integer> catselect(Connection con,ArrayList<String> liste) thr
     
     
     }
-        return obj;
-          }
+        
+          
 private static void Bilanutil(Connection con, int uti) throws SQLException {
         
       
