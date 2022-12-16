@@ -37,7 +37,7 @@ public class PageObjet extends ScrollPane {
     public float nouveauPrixActuel;
     
     public PageObjet (VueMain main, BorderPane mainEncheres,int idObjet,String nomObjet,String petiteDescri,String longueDescri
-    ,float prixActuel){
+    ,float prixActuel) throws SQLException{
         Connection con =main.getInfoSession().getConBdd(); //Ref lien a la bdd
         
         GridPane gp = new GridPane();
@@ -46,6 +46,8 @@ public class PageObjet extends ScrollPane {
         lMessage.setFont(Font.font("Montserra",FontWeight.BOLD,20));
         Label lNomObjet = new Label (nomObjet);
         lNomObjet.setFont(Font.font("Montserra",FontWeight.EXTRA_BOLD,34));
+        Label lNomCategorie = new Label("Catégorie : "+gestionBddGUI.returnNomCategorieFromIdObjet(con, String.valueOf(idObjet)));
+        lNomCategorie.setFont(Font.font("Montserra",FontWeight.BOLD,16));
         Label lPetiteDescri1 = new Label("Description courte de l'objet : ");
         lPetiteDescri1.setFont(Font.font("Montserra",FontWeight.BOLD,16));
         Label lPetiteDescri2 = new Label(petiteDescri);
@@ -80,14 +82,15 @@ public class PageObjet extends ScrollPane {
         
         gp.add(lMessage, 0, 0,2,1);
         gp.add(lNomObjet, 0, 1);
-        gp.add(lPetiteDescri1,0,2);
-        gp.add(lPetiteDescri2, 1, 2);
-        gp.add(lLongueDescri1,0,3);
-        gp.add(lLongueDescri2, 1, 3);
-        gp.add(lPrixActuel1,0,4);
-        gp.add(lPrixActuel2, 1, 4);
-        gp.add(lVotreEnchere, 0, 5);
-        gp.add(tpEncherir, 0, 6);
+        gp.add(lNomCategorie,0,2);
+        gp.add(lPetiteDescri1,0,3);
+        gp.add(lPetiteDescri2, 1, 3);
+        gp.add(lLongueDescri1,0,4);
+        gp.add(lLongueDescri2, 1, 4);
+        gp.add(lPrixActuel1,0,5);
+        gp.add(lPrixActuel2, 1, 5);
+        gp.add(lVotreEnchere, 0, 6);
+        gp.add(tpEncherir, 0, 7);
         
         gp.setAlignment(Pos.CENTER);
         gp.setVgap(10);
@@ -151,12 +154,16 @@ public class PageObjet extends ScrollPane {
             } catch (SQLException ex) {
                 Logger.getLogger(PageObjet.class.getName()).log(Level.SEVERE, null, ex);
             }
-            this.refreshPage(main, mainEncheres, idObjet, nomObjet, petiteDescri, longueDescri, nouveauPrixActuel);
+            try {
+                this.refreshPage(main, mainEncheres, idObjet, nomObjet, petiteDescri, longueDescri, nouveauPrixActuel);
+            } catch (SQLException ex) {
+                Logger.getLogger(PageObjet.class.getName()).log(Level.SEVERE, null, ex);
+            }
         });
     }
     
     public void refreshPage(VueMain main, BorderPane mainEncheres,int idObjet,String nomObjet,String petiteDescri,String longueDescri
-    ,float nouveauPrixActuel){
+    ,float nouveauPrixActuel) throws SQLException{
         
         mainEncheres.setCenter(new PageObjet(main,mainEncheres,idObjet,nomObjet,petiteDescri,longueDescri,nouveauPrixActuel));
     }

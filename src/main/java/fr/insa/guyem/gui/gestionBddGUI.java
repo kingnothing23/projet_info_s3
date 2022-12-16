@@ -38,6 +38,7 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -165,12 +166,15 @@ public class gestionBddGUI {
                     Label lTempsRestant = new Label("Il reste\n"+gestionBddGUI.stringTempsRestant(convertStringToDateTime(fin)));
                     lTempsRestant.setFont(Font.font("Montserra", FontWeight.BOLD, 8));
                     
+                    Label lCategorie = new Label ("Catégorie : "+gestionBddGUI.returnNomCategorieFromIdObjet(con, String.valueOf(id)));
+                    lCategorie.setFont(Font.font("Montserra", FontWeight.BOLD, 10));
+                    
                     if (main.getInfoSession().getCurrentUserId() == Integer.parseInt(vendeur)){
                         lVendeur.setText("Vous êtes le vendeur \nde cet objet");
                     }
                     
                     
-                    VBox vb1 = new VBox(lNom, lDescription,lVendeur);
+                    VBox vb1 = new VBox(lNom, lDescription,lVendeur,lCategorie);
                     VBox vb2 = new VBox(lMessagePrix,lPrix,lTempsRestant);
                     vb1.setLayoutX(15);
                     vb1.setSpacing(5);
@@ -183,7 +187,11 @@ public class gestionBddGUI {
                     pOffreSingle.setMinHeight(120);
                     
                     pOffreSingle.setOnMouseClicked((t) -> {
-                        mainEncheres.setCenter(new PageObjet(main,mainEncheres,id,nom,courtedescri,longuedescri,prixActuel));
+                        try {
+                            mainEncheres.setCenter(new PageObjet(main,mainEncheres,id,nom,courtedescri,longuedescri,prixActuel));
+                        } catch (SQLException ex) {
+                            Logger.getLogger(gestionBddGUI.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                         mainEncheres.setTop(null);
                         mainEncheres.setLeft(null);
                     });
@@ -270,7 +278,11 @@ public class gestionBddGUI {
         });
         
         bEncheres.setOnMouseClicked((t) -> {
-            main.setCenter(new PageMesEncheres());
+            try {
+                main.setCenter(new PageMesEncheres(con,main));
+            } catch (SQLException ex) {
+                Logger.getLogger(gestionBddGUI.class.getName()).log(Level.SEVERE, null, ex);
+            }
         });
     }
     
@@ -392,6 +404,7 @@ public class gestionBddGUI {
         }
     }
     
+    //Renvoie la liste des id des categories
     public static ArrayList<String> returnIdCategories(Connection con) throws SQLException{
         try ( Statement st = con.createStatement()) {
             String query = "select idc from categorie";
@@ -405,9 +418,20 @@ public class gestionBddGUI {
         }
     }
     
+    //Renvoie le nom de la catégorie avec un id donné
     public static String returnNomCategorie(Connection con, String id) throws SQLException{
         try ( Statement st = con.createStatement()) {
             String query = "select nom from categorie where idc="+id;
+            try ( ResultSet tlu = st.executeQuery(query)) {
+                tlu.next();
+                return tlu.getString(1);
+            }
+        }
+    }
+    
+    public static String returnNomCategorieFromIdObjet(Connection con,String ido)throws SQLException {
+        try ( Statement st = con.createStatement()) {
+            String query = "select categorie.nom from objets,categorie where objets.ido ="+ido+" and objets.categorie = categorie.idc";
             try ( ResultSet tlu = st.executeQuery(query)) {
                 tlu.next();
                 return tlu.getString(1);
@@ -525,8 +549,69 @@ public class gestionBddGUI {
         return resultat;
     }
     
-    
-    //ID UTILISATEUR QUI A L ENCHERE LA PLUS HAUTE 
-    //FAIRE PAGE VOS ENCHERES
-    //GESTION DU TEMPS 
+    public static void createHistoUtil(Connection con,VueMain main, BorderPane mainPage,boolean isExpired) throws SQLException{
+        try ( Statement st = con.createStatement()) {
+            
+            try ( ResultSet tlu = st.executeQuery("select * from enchere,objets  where de ="+main.getInfoSession().getCurrentUserId()+" and objets.ido=enchere.sur order by sur asc, montant desc")) {
+
+                //Création des contenants et éléments à afficher :
+                Label lMsgChaqueEnchere = new Label();
+                String mémoireObjet = "";
+                String mémoireMontantPlusHautUtil="";
+                String mémoireNomObjet="";
+                
+                VBox vbContenuTitledPane = new VBox (); //Contenu de chaque titled pane 
+                VBox vbHistorique= new VBox();  //Tout l'historique 
+                
+                 // ici, on veut lister toutes les lignes, d'où le while
+                while (tlu.next()) {
+                    String objetActuel = tlu.getString(3);
+                    String montantEnchere = tlu.getString(4);
+                    String fin = tlu.getString(14);
+                    
+                    fin = fin.substring(0, 19);
+                    
+                    //Si c'est un nouvel objet on créé un nouveau titled pane et tout les contenants/infos associés
+                    if (!objetActuel.equals(mémoireObjet)){
+                        if (isExpired && tempsRestantMillis(convertStringToDateTime(fin))>0) {
+                           
+                           continue;
+                        }else if(!isExpired && tempsRestantMillis(convertStringToDateTime(fin))<0){
+                            continue;
+                        }
+                        vbContenuTitledPane = new VBox();
+                        mémoireMontantPlusHautUtil = tlu.getString(4);
+                        mémoireNomObjet = tlu.getString(7);
+                        mémoireObjet = objetActuel;
+                        String encherePlusHaute = Float.toString(priceActual(con, Integer.valueOf(objetActuel)));
+                        
+                        //creation d'une nouvelle ligne avec titled pane, enchère la plus haute..
+                        TitledPane tpObjet = new TitledPane("Objet : "+ mémoireNomObjet,vbContenuTitledPane);
+                        tpObjet.setExpanded(false);
+                        Label lEncherePlusHaute = new Label("Enchère la plus haute : "+encherePlusHaute);
+                        Label lVotreEnchere = new Label("Votre enchère : "+mémoireMontantPlusHautUtil);
+                        if (encherePlusHaute.equals(mémoireMontantPlusHautUtil)){
+                            lEncherePlusHaute.setText("Votre enhère de montant : "+mémoireMontantPlusHautUtil+" € est la plus haute sur cet objet");
+                            lVotreEnchere.setText("");
+                        }else{
+                            lVotreEnchere.setText("Votre enchère : "+mémoireMontantPlusHautUtil);
+                        }
+                        
+                        HBox hbTitledPane=new HBox(tpObjet,lEncherePlusHaute,lVotreEnchere);
+                        vbHistorique.getChildren().add(hbTitledPane);
+                    }
+                    
+                    //on créé la ligne d'infos de chaque enchère :
+                    lMsgChaqueEnchere= new Label("Enchère sur : "+mémoireNomObjet+", Montant : " +montantEnchere+" €");
+                    vbContenuTitledPane.getChildren().add(lMsgChaqueEnchere);
+                }
+                mainPage.setCenter(vbHistorique);
+            }
+        }
+    }
+     
+    //FAIRE PAGE VOS ENCHERES, voir offre expirée
+    //Page vos ventes : voir objets vendus
+    //Ajouter enchere seulement si pas expirée
+    //Ajouter recherche
 }

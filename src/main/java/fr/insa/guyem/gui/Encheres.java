@@ -36,25 +36,6 @@ public class Encheres extends BorderPane{
     public Encheres (VueMain main) throws SQLException{
         Connection con =main.getInfoSession().getConBdd(); //Ref lien a la bdd
         
-        
-        //Def Boutons utilisateur
-//        Button bDeco = new Button("Se déconnecter");
-//        bDeco.setStyle("-fx-background-color: #E1341E");
-//        bDeco.setFont(Font.font("Montserra",FontWeight.BOLD,14));
-//        Button bVentes = new Button ("Mes ventes");
-//        bVentes.setFont(Font.font("Montserra",FontWeight.BOLD,14));
-//        Button bEncheres = new Button ("Mes enchères");
-//        bEncheres.setFont(Font.font("Montserra",FontWeight.BOLD,14));
-//        VBox vbBoutonUtilisateur = new VBox(bEncheres,bVentes,bDeco);
-//        
-//        TitledPane tpUtilisateur = new TitledPane("Utilisateur :\n"+
-//                gestionBddGUI.returnNomUtilisateur(con,main.getInfoSession().getCurrentUserId()),vbBoutonUtilisateur);
-//        tpUtilisateur.setFont(Font.font("Montserra",FontWeight.BOLD,16));
-//        tpUtilisateur.setExpanded(false);
-//        Button bNouvelleVente = new Button("Créer une vente");
-//        bNouvelleVente.setFont(Font.font("Montserra",FontWeight.BOLD,16));
-//        VBox vbRight = new VBox(tpUtilisateur,bNouvelleVente);
-//        this.setRight(vbRight);
         gestionBddGUI.bandeauUtilisateur(con, main, this);
         gestionBddGUI.creationFiltre(main, this, con);
         
