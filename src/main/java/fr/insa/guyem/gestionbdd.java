@@ -99,7 +99,7 @@ public class gestionbdd {
                     System.out.println("entrer l'id de  l'utilisateur");
                     int utis = Lire.i();
                     System.out.println("le prix de  l objet est :");
-                    float pessi = PriceActual(con, obj);
+                    double pessi = PriceActual(con, obj);
                     System.out.println(pessi);
                     System.out.println("entrer le montant de  votre enchere");
                     float price = Lire.f();
@@ -383,7 +383,7 @@ public class gestionbdd {
                     System.out.println("entrer l'id de  l'utilisateur");
                     int utis = Lire.i();
                     System.out.println("le prix de  l objet est :");
-                    float pessi = PriceActual(con, obj);
+                    double pessi = PriceActual(con, obj);
                     System.out.println(pessi);
                     System.out.println("entrer le montant de  votre enchere");
                     float price = Lire.f();
@@ -558,7 +558,23 @@ public class gestionbdd {
             ok = false;
         }
     }
+   private static LocalDateTime enterdate() {
+        LocalDateTime datetime;
+        System.out.println("entrer la date yyyy-mm-jj");
+        String entereddate = Lire.S();
+        LocalDate date = LocalDate.parse(entereddate);
 
+        System.out.println("entrer HH:mm:SS ");
+        DateTimeFormatter parseFormate = DateTimeFormatter.ofPattern("H:mm:ss");
+        Scanner scs = new Scanner(System.in);
+        String timeString = scs.nextLine();
+        LocalTime time = LocalTime.parse(timeString, parseFormate);
+        System.out.println(time);
+        datetime = date.atTime(time);
+        System.out.println(datetime);
+
+        return datetime;
+    }
     private static void demandeNouvelUtilisateur(Connection con) throws SQLException {
         boolean ok = true;
         while (ok) {
@@ -1054,24 +1070,9 @@ private static void filprice(Connection con) throws SQLException{
     
     
 }
-    private static LocalDateTime enterdate() {
-        LocalDateTime datetime;
-        System.out.println("entrer la date yyyy-mm-jj");
-        String entereddate = Lire.S();
-        LocalDate date = LocalDate.parse(entereddate);
-
-        System.out.println("entrer HH:mm:SS ");
-        DateTimeFormatter parseFormate = DateTimeFormatter.ofPattern("H:mm:ss");
-        Scanner scs = new Scanner(System.in);
-        String timeString = scs.nextLine();
-        LocalTime time = LocalTime.parse(timeString, parseFormate);
-        System.out.println(time);
-        datetime = date.atTime(time);
-        System.out.println(datetime);
-
-        return datetime;
-    }
+ 
 
     
     
+}
 }
