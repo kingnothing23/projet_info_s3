@@ -1000,6 +1000,84 @@ private static void Bilanutil(Connection con, int uti) throws SQLException {
             }
         }
     }
+    
+    private static void searchdescri(Connection con) throws SQLException{
+        ArrayList<String> motcle = new ArrayList<String>() ;
+        int i ;
+        System.out.println("entrez un mot clé à chercher :");
+        motcle.add(Lire.S());
+        System.out.println(" nouveau mot clé ? ( 0 pour non , autre nombre  pour oui");
+        i=Lire.i();
+        while(i!= 0){
+          System.out.println("entrez un mot clé à chercher :");
+        motcle.add(Lire.S());
+        System.out.println(" nouveau mot clé ? ( 0 pour non , autre nombre  pour oui");
+        i=Lire.i();  
+            
+            
+            
+            
+            
+        }
+       if (motcle.size()!= 0){
+        String query = "select * from objets where";
+          query = query+ "longuedescri like '%"+motcle.get(0)+"%'";
+       
+          if(motcle.size()!= 1){
+          for (int g = 1 ; g<motcle.size();g++){
+         query = query+ " or longuedescri like '%"+motcle.get(i)+"%'";
+            
+            
+        }
+       }
+          
+          try ( Statement st = con.createStatement()) {
+            try ( ResultSet tlu = st.executeQuery(query)) {
+                while(tlu.next()) {
+            
+              int id = tlu.getInt("ido");
+                    // ou par son numéro (la première colonne a le numéro 1)
+                    String nom = tlu.getString(2);
+                    String petitedescri = tlu.getString(3);
+                    String longuedescri =tlu.getString(4);
+                    String prixbase = tlu.getString(5);
+                    String categorie = tlu.getString(6);
+                    String vendeur = tlu.getString(7);
+                    String debut = tlu.getString(8);
+                    String fin = tlu.getString(9);
+                    System.out.println(id + " : " + nom + " prix(" + prixbase + ") vendeur :" + vendeur + " petite description : " + petitedescri + " ,longue description : " +
+                            longuedescri +", debut de l'enchere :" + debut + ", fin de l'enchere :" + fin);
+              
+          } 
+                
+                
+                
+                
+                
+                
+                
+            }
+        }
+       }
+       
+        
+       
+       
+       
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 private static void filprice(Connection con) throws SQLException{
     System.out.println("entrer la valeur de prix minimale(0 pour pas de  limite");
     Float min = Lire.f();
