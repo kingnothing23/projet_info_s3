@@ -730,7 +730,7 @@ public class gestionBddGUI {
             
             try ( ResultSet tlu = st.executeQuery("select * from objets,enchere where enchere.sur=objets.ido and vendeur <> "+main.getInfoSession().getCurrentUserId()+" order by montant desc ")){
                 tlu.next();
-                return Float.valueOf(tlu.getString(4));
+                return Float.valueOf(tlu.getString(13));
                 
             }
         }
