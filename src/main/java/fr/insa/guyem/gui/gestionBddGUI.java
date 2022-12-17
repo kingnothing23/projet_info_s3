@@ -36,7 +36,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -156,7 +159,7 @@ public class gestionBddGUI {
                     lDescription.setMaxWidth(140);
                     lDescription.setWrapText(true);
                     Label lVendeur = new Label ("Vendu par : "+gestionBddGUI.returnNomUtilisateur(con, Integer.valueOf(vendeur)));
-                    lVendeur.setFont(Font.font("Montserra", FontWeight.BOLD, 12));
+                    lVendeur.setFont(Font.font("Montserra", FontWeight.BOLD, 10));
 
                     
                     Label lPrix = new Label(prixActuel + " €");
@@ -184,7 +187,7 @@ public class gestionBddGUI {
                     Pane pOffreSingle = new Pane(vb1, vb2);
                     pOffreSingle.setStyle("-fx-padding: 10; -fx-background-color: cornsilk;");
                     pOffreSingle.setMaxWidth(315);
-                    pOffreSingle.setMinHeight(120);
+                    pOffreSingle.setMinHeight(140);
                     
                     pOffreSingle.setOnMouseClicked((t) -> {
                         try {
@@ -440,6 +443,7 @@ public class gestionBddGUI {
     }
     
     public static void creationFiltre(VueMain main,BorderPane mainEncheres,Connection con) throws SQLException{
+        
         Label lFiltre = new Label("Filtre de catégories :");
         Button bAppliquer = new Button("Appliquer les filtres");
         Button bToutSelectionner = new Button("Tout sélectionner");
@@ -451,6 +455,7 @@ public class gestionBddGUI {
         ArrayList<String> listeCatSelected = new ArrayList<String>();
         ArrayList<String> listeIdCatExisting = gestionBddGUI.returnIdCategories(con);
         ArrayList<RadioButton> listeRbCat = new ArrayList<RadioButton>();
+        
         //ajout des radiobuttons correspondants a toutes les categories et definitions de leur comportement
         for (int i=0;i<listeIdCatExisting.size();i++){
             String idc = listeIdCatExisting.get(i);
@@ -560,6 +565,7 @@ public class gestionBddGUI {
                 String mémoireMontantPlusHautUtil="";
                 String mémoireNomObjet="";
                 
+                
                 VBox vbContenuTitledPane = new VBox (); //Contenu de chaque titled pane 
                 ScrollPane spHistorique = new ScrollPane();
                 VBox vbHistorique= new VBox();  //Tout l'historique 
@@ -568,6 +574,9 @@ public class gestionBddGUI {
                 vbContenuTitledPane.setSpacing(5);
                  // ici, on veut lister toutes les lignes, d'où le while
                 while (tlu.next()) {
+                    
+                    Label lEncherePlusHaute=new Label();
+                    Label lVotreEnchere=new Label();
                     String objetActuel = tlu.getString(3);
                     String montantEnchere = tlu.getString(4);
                     String fin = tlu.getString(14);
@@ -597,17 +606,26 @@ public class gestionBddGUI {
                         //creation d'une nouvelle ligne avec titled pane, enchère la plus haute..
                         TitledPane tpObjet = new TitledPane("Objet : "+ mémoireNomObjet,vbContenuTitledPane);
                         tpObjet.setExpanded(false);
-                        Label lEncherePlusHaute = new Label("Enchère la plus haute : "+encherePlusHaute);
-                        lEncherePlusHaute.setFont(Font.font("Montserra",FontWeight.BOLD,14));
-                        Label lVotreEnchere = new Label("Votre enchère : "+mémoireMontantPlusHautUtil);
-                        lVotreEnchere.setFont(Font.font("Montserra",FontWeight.BOLD,14));
-                        
-                        if (encherePlusHaute.equals(mémoireMontantPlusHautUtil)){
-                            lEncherePlusHaute.setText("Votre enhère de montant : "+mémoireMontantPlusHautUtil+" € est la plus haute sur cet objet");
-                            lVotreEnchere.setText("");
+                        if (isExpired){
+                            if (encherePlusHaute.equals(mémoireMontantPlusHautUtil)){
+                                lEncherePlusHaute.setText("Vous avez remporté cette enchère !\nVotre montant final était de : "+mémoireMontantPlusHautUtil+" €");
+                                lVotreEnchere.setText("");
+                            }else{
+                                lEncherePlusHaute.setText("Vous n'avez pas remporté cette enchère\nl'enchère la plus haute était de : "
+                                        + encherePlusHaute+" €");
+                            }
                         }else{
-                            lVotreEnchere.setText("Votre enchère : "+mémoireMontantPlusHautUtil);
+                            if (encherePlusHaute.equals(mémoireMontantPlusHautUtil)){
+                            lEncherePlusHaute.setText("Votre enchère de montant : "+mémoireMontantPlusHautUtil+" € est la plus haute sur cet objet");
+                            lVotreEnchere.setText("");
+                            }else{
+                                lEncherePlusHaute = new Label("Enchère la plus haute : "+encherePlusHaute+" €");
+                                lVotreEnchere = new Label(" votre enchère : "+mémoireMontantPlusHautUtil+" € ");
+                            }
                         }
+                        
+                        lEncherePlusHaute.setFont(Font.font("Montserra",FontWeight.BOLD,14));
+                        lVotreEnchere.setFont(Font.font("Montserra",FontWeight.BOLD,14));
                         
                         HBox hbTitledPane=new HBox(tpObjet,lEncherePlusHaute,lVotreEnchere);
                         hbTitledPane.setStyle("-fx-padding: 10; -fx-background-color: cornsilk;");
@@ -646,8 +664,34 @@ public class gestionBddGUI {
         
     }
       
-    //FAIRE PAGE VOS ENCHERES, voir offre expirée
+    
+    public static void createBarreRecherche(Connection con,VueMain main,BorderPane mainPage,Image img){
+        //Creation logo:
+        ImageView view = new ImageView (img);
+        view.setFitHeight(108);
+        view.setFitWidth(192);
+        
+        //creation barre de recherche :
+        Label lRechercher = new Label("Rechercher sur Ebuy : ");
+        TextField tfRechercher = new TextField();
+        Button bRechercher = new Button("Rechercher");
+        bRechercher.setFont(Font.font("Montserra",FontWeight.BOLD,14));
+        lRechercher.setFont(Font.font("Montserra",FontWeight.BOLD,18));
+        HBox hbRechercher = new HBox(lRechercher,tfRechercher,bRechercher);
+        HBox hbTop= new HBox(view,hbRechercher);
+        hbRechercher.setSpacing(5);
+        hbRechercher.setPadding(new Insets(20));
+        hbRechercher.setAlignment(Pos.CENTER);
+        mainPage.setTop(hbTop);
+        
+        bRechercher.setOnMouseClicked((t) -> {
+            System.out.println("RECHERCHE");
+        });
+    }
     //Page vos ventes : voir objets vendus
     //Ajouter enchere seulement si pas expirée
     //Ajouter recherche
+    //Faire exceptions création nouvel objet, nouveau profil
+    //bouton voir mes objets vendus
+    //dans mes encheres terminees avoir message : vous avez acheté cet objet, ou vous n'avez pas acheté cet objet 
 }

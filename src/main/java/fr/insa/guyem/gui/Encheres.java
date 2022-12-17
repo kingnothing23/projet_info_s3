@@ -6,26 +6,8 @@ package fr.insa.guyem.gui;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
-import java.time.Month;
-import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javafx.event.EventType;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TitledPane;
+import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.paint.Paint ;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 
 /**
  *
@@ -38,6 +20,7 @@ public class Encheres extends BorderPane{
         
         gestionBddGUI.bandeauUtilisateur(con, main, this);
         gestionBddGUI.creationFiltre(main, this, con);
+        gestionBddGUI.createBarreRecherche(con, main, this,new Image(getClass().getResourceAsStream("ebuy.png")));
         
         //Affichage de tous les objets du site
         gestionBddGUI.tousLesObjets(con,this,main,Integer.toString(main.getInfoSession().getCurrentUserId()));

@@ -23,6 +23,9 @@ import java.sql.SQLException;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.stage.Stage;
 
 /**
@@ -35,12 +38,13 @@ public class Main extends Application {
     @Override
     public void start(Stage stage) throws SQLException{
         sc = new Scene(new VueMain());
-//        Scene sc = new Scene(new TestFx());
         stage.setWidth(1000);
         stage.setHeight(600);
         stage.setScene(sc);
-        stage.setTitle("Ebay.fr");
+        stage.setTitle("Ebuy.fr");
+        stage.getIcons().add(new Image(getClass().getResourceAsStream("ebuyicon.png")));
         stage.show();
+        
     }
 
     public static void main(String[] args) {

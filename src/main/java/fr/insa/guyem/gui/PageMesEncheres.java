@@ -28,7 +28,7 @@ import javafx.scene.text.FontWeight;
  */
 public class PageMesEncheres extends BorderPane{
     public PageMesEncheres(Connection con,VueMain main) throws SQLException {
-        Label lMsgEncheres = new Label("Vos enchères :");
+        Label lMsgEncheres = new Label("Mes enchères :");
         lMsgEncheres.setFont(Font.font("Montserra",FontWeight.BOLD,20));
         lMsgEncheres.setPadding(new Insets(10));
         RadioButton rbEnCours = new RadioButton("En cours");

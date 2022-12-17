@@ -138,12 +138,13 @@ public class NouvelleVente extends VBox{
                 LocalDateTime ldtDateDebut = gestionBddGUI.convertDateTime(tDateDebut.getText(),tHourDebut.getText());
                 LocalDateTime ldtDateFin = gestionBddGUI.convertDateTime(tDateFin.getText(),tHourFin.getText());
                 
-                if (gestionBddGUI.tempsRestantMillis(ldtDateFin)<0){
+                if (gestionBddGUI.tempsRestantMillis(ldtDateFin)<0 || ldtDateFin.isBefore(ldtDateDebut)){
                     System.out.println("ERREUR A GERER");
-                }
-                gestionBddGUI.createObjets(con, tNom.getText(), Double.parseDouble(tPrixInitial.getText()), tPetitedesc.getText(),
+                }else{
+                    gestionBddGUI.createObjets(con, tNom.getText(), Double.parseDouble(tPrixInitial.getText()), tPetitedesc.getText(),
                         tLonguedesc.getText(),Integer.valueOf(listeIdCat.get(cbCategorie.getSelectionModel().getSelectedIndex())),main.getInfoSession().getCurrentUserId() , ldtDateDebut, ldtDateFin);
-                main.setCenter(new Encheres(main));
+                    main.setCenter(new Encheres(main));
+                }
             } catch (SQLException ex) {
                 Logger.getLogger(NouvelleVente.class.getName()).log(Level.SEVERE, null, ex);
             }
