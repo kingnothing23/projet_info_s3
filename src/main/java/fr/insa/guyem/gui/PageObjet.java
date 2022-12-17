@@ -64,7 +64,7 @@ public class PageObjet extends ScrollPane {
         lPrixActuel1.setFont(Font.font("Montserra",FontWeight.BOLD,16));
         Label lPrixActuel2 = new Label(Float.toString(prixActuel)+" €");
         lPrixActuel2.setFont(Font.font("Montserra",FontWeight.BOLD,16));
-        Label lVotreEnchere = new Label ("Votre enchère est de XXX €");
+        Label lVotreEnchere = new Label ("Votre enchère est de "+gestionBddGUI.returnEnchereUtil(con,String.valueOf( main.getInfoSession().getCurrentUserId()),String.valueOf(idObjet), main)+" €");
         lVotreEnchere.setFont(Font.font("Montserra",FontWeight.BOLD,16));
         
         
