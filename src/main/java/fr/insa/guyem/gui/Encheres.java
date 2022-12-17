@@ -19,8 +19,7 @@ public class Encheres extends BorderPane{
         Connection con =main.getInfoSession().getConBdd(); //Ref lien a la bdd
         
         gestionBddGUI.bandeauUtilisateur(con, main, this);
-        gestionBddGUI.creationFiltre(main, this, con);
-        gestionBddGUI.createBarreRecherche(con, main, this,new Image(getClass().getResourceAsStream("ebuy.png")));
+        gestionBddGUI.creationFiltre(main, this, con,new Image(getClass().getResourceAsStream("ebuy.png")));
         
         //Affichage de tous les objets du site
         gestionBddGUI.tousLesObjets(con,this,main,Integer.toString(main.getInfoSession().getCurrentUserId()));

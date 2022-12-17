@@ -44,7 +44,6 @@ public class PageAccueil extends BorderPane{
         vbAccueil.setAlignment(Pos.CENTER);
         hbOptions.setAlignment(Pos.CENTER);
         hbOptions.setSpacing(10);
-        vbAccueil.setSpacing(10);
         this.setCenter(vbAccueil);
         
         bLogin.setOnAction((t) -> {

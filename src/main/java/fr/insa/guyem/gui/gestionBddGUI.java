@@ -220,18 +220,18 @@ public class gestionBddGUI {
 
     //Creation du filtre des categories
     public static void filtreCategories (Connection con, VueMain main, BorderPane mainEncheres, ArrayList<String> listeIdCat) throws SQLException {
-        String finQuery="";
-        if (listeIdCat.size()>0){
-            finQuery = finQuery+listeIdCat.get(0);
-            for (int i=1;i<listeIdCat.size();i++){
-                finQuery = finQuery+ " or categorie = "+ listeIdCat.get(i);
-            }
-            String query = "select * from objets where (categorie = "+finQuery+" )and vendeur <> "+main.getInfoSession().getCurrentUserId();
-            affichageQuery(con,mainEncheres,main,query);
-
-        }else{
-            affichageQuery(con,mainEncheres,main,"select * from objets where 1=0");
-        }
+//        String finQuery="";
+//        if (listeIdCat.size()>0){
+//            finQuery = finQuery+listeIdCat.get(0);
+//            for (int i=1;i<listeIdCat.size();i++){
+//                finQuery = finQuery+ " or categorie = "+ listeIdCat.get(i);
+//            }
+//            String query = "select * from objets where (categorie = "+finQuery+" )and vendeur <> "+main.getInfoSession().getCurrentUserId();
+//            affichageQuery(con,mainEncheres,main,query);
+//
+//        }else{
+//            affichageQuery(con,mainEncheres,main,"select * from objets where 1=0");
+//        }
         
     }
     
@@ -442,8 +442,8 @@ public class gestionBddGUI {
         }
     }
     
-    public static void creationFiltre(VueMain main,BorderPane mainEncheres,Connection con) throws SQLException{
-        
+    public static void creationFiltre(VueMain main,BorderPane mainEncheres,Connection con,Image img) throws SQLException{
+        // PARTIE CATEGORIES :
         Label lFiltre = new Label("Filtre de catégories :");
         Button bAppliquer = new Button("Appliquer les filtres");
         Button bToutSelectionner = new Button("Tout sélectionner");
@@ -482,12 +482,35 @@ public class gestionBddGUI {
         vbFiltre.setPadding(new Insets(5));
         mainEncheres.setLeft(vbFiltre);
         
+        TextField tfRechercher = new TextField();
+        
+        //PARTIE RECHERCHE :
+        //Creation logo:
+        ImageView view = new ImageView (img);
+        view.setFitHeight(108);
+        view.setFitWidth(192);
+        
+        //creation barre de recherche :
+        Label lRechercher = new Label("Rechercher sur Ebuy : ");
+        
+        Button bRechercher = new Button("Rechercher");
+        bRechercher.setFont(Font.font("Montserra",FontWeight.BOLD,14));
+        lRechercher.setFont(Font.font("Montserra",FontWeight.BOLD,18));
+        HBox hbRechercher = new HBox(lRechercher,tfRechercher,bRechercher);
+        HBox hbTop= new HBox(view,hbRechercher);
+        hbRechercher.setSpacing(5);
+        hbRechercher.setPadding(new Insets(20));
+        hbRechercher.setAlignment(Pos.CENTER);
+        
+        mainEncheres.setTop(hbTop);
+        
+        //Evenements :
         bAppliquer.setOnMouseClicked((t) -> {
-            try {
-                gestionBddGUI.filtreCategories(con, main, mainEncheres, listeCatSelected);
-            } catch (SQLException ex) {
-                Logger.getLogger(Encheres.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            applicationFiltre(listeCatSelected,tfRechercher,main,con,mainEncheres);
+        });
+        
+        bRechercher.setOnMouseClicked((t) -> {
+            applicationFiltre(listeCatSelected,tfRechercher,main,con,mainEncheres);
         });
         
         bToutSelectionner.setOnMouseClicked((t) -> {
@@ -507,8 +530,34 @@ public class gestionBddGUI {
             }
             listeCatSelected.clear();
         });
+        
+        
+        
     }
     
+    public static void applicationFiltre(ArrayList<String> listeCatSelected,TextField tfRechercher,VueMain main,Connection con,BorderPane mainEncheres){
+        try {
+                //Query finale :
+                String bigQuery="";
+                //Gestion de la recherche par categorie : 
+                String finQuery = "";
+                if (listeCatSelected.size() > 0) {
+                    finQuery = finQuery + listeCatSelected.get(0);
+                    for (int i = 1; i < listeCatSelected.size(); i++) {
+                        finQuery = finQuery + " or categorie = " + listeCatSelected.get(i);
+                    }
+                    String query = "select * from objets where (categorie = " + finQuery + " )and vendeur <> " + main.getInfoSession().getCurrentUserId();
+                    bigQuery=bigQuery+ query + "and upper(nom) like upper('%" + tfRechercher.getText() + "%')";
+
+                } else {
+                    bigQuery= "select * from objets where 1=0 and upper(nom) like upper('%" + tfRechercher.getText() + "%')";
+                }
+                
+                gestionBddGUI.affichageQuery(con, mainEncheres, main,bigQuery);
+            } catch (SQLException ex) {
+                Logger.getLogger(Encheres.class.getName()).log(Level.SEVERE, null, ex);
+            }
+    }
     public static long tempsRestantMillis(LocalDateTime ldtFin){
         long resultat = ChronoUnit.MILLIS.between(LocalDateTime.now(), ldtFin);
         return resultat;
@@ -665,33 +714,14 @@ public class gestionBddGUI {
     }
       
     
-    public static void createBarreRecherche(Connection con,VueMain main,BorderPane mainPage,Image img){
-        //Creation logo:
-        ImageView view = new ImageView (img);
-        view.setFitHeight(108);
-        view.setFitWidth(192);
-        
-        //creation barre de recherche :
-        Label lRechercher = new Label("Rechercher sur Ebuy : ");
-        TextField tfRechercher = new TextField();
-        Button bRechercher = new Button("Rechercher");
-        bRechercher.setFont(Font.font("Montserra",FontWeight.BOLD,14));
-        lRechercher.setFont(Font.font("Montserra",FontWeight.BOLD,18));
-        HBox hbRechercher = new HBox(lRechercher,tfRechercher,bRechercher);
-        HBox hbTop= new HBox(view,hbRechercher);
-        hbRechercher.setSpacing(5);
-        hbRechercher.setPadding(new Insets(20));
-        hbRechercher.setAlignment(Pos.CENTER);
-        mainPage.setTop(hbTop);
-        
-        bRechercher.setOnMouseClicked((t) -> {
-            System.out.println("RECHERCHE");
-        });
-    }
     //Page vos ventes : voir objets vendus
-    //Ajouter enchere seulement si pas expirée
-    //Ajouter recherche
+    //Relier recherche à bdd 
     //Faire exceptions création nouvel objet, nouveau profil
     //bouton voir mes objets vendus
     //dans mes encheres terminees avoir message : vous avez acheté cet objet, ou vous n'avez pas acheté cet objet 
+    //Pouvoir enchérir depuis page mes enchères
+    //Se termine dans ... pour mes enchères
+    //Page Objet différente pour vendeur et acheteur
+    //image par objet ?
+    //trie par prix ?
 }
