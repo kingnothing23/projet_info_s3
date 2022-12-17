@@ -99,7 +99,7 @@ public class gestionbdd {
                     System.out.println("entrer l'id de  l'utilisateur");
                     int utis = Lire.i();
                     System.out.println("le prix de  l objet est :");
-                    float pessi = PriceActual(con, obj);
+                    double pessi = PriceActual(con, obj);
                     System.out.println(pessi);
                     System.out.println("entrer le montant de  votre enchere");
                     float price = Lire.f();
@@ -383,7 +383,7 @@ public class gestionbdd {
                     System.out.println("entrer l'id de  l'utilisateur");
                     int utis = Lire.i();
                     System.out.println("le prix de  l objet est :");
-                    float pessi = PriceActual(con, obj);
+                    double pessi = PriceActual(con, obj);
                     System.out.println(pessi);
                     System.out.println("entrer le montant de  votre enchere");
                     float price = Lire.f();
@@ -558,7 +558,23 @@ public class gestionbdd {
             ok = false;
         }
     }
+   private static LocalDateTime enterdate() {
+        LocalDateTime datetime;
+        System.out.println("entrer la date yyyy-mm-jj");
+        String entereddate = Lire.S();
+        LocalDate date = LocalDate.parse(entereddate);
 
+        System.out.println("entrer HH:mm:SS ");
+        DateTimeFormatter parseFormate = DateTimeFormatter.ofPattern("H:mm:ss");
+        Scanner scs = new Scanner(System.in);
+        String timeString = scs.nextLine();
+        LocalTime time = LocalTime.parse(timeString, parseFormate);
+        System.out.println(time);
+        datetime = date.atTime(time);
+        System.out.println(datetime);
+
+        return datetime;
+    }
     private static void demandeNouvelUtilisateur(Connection con) throws SQLException {
         boolean ok = true;
         while (ok) {
@@ -614,7 +630,7 @@ public class gestionbdd {
         }
     }
 
-    private static float PriceActual(Connection con, int obj) throws SQLException {
+    private static double PriceActual(Connection con, int obj) throws SQLException {
         int yesin;
         float actual;
         try ( Statement st = con.createStatement()) {
@@ -984,23 +1000,220 @@ private static void Bilanutil(Connection con, int uti) throws SQLException {
             }
         }
     }
-
-    private static LocalDateTime enterdate() {
-        LocalDateTime datetime;
-        System.out.println("entrer la date yyyy-mm-jj");
-        String entereddate = Lire.S();
-        LocalDate date = LocalDate.parse(entereddate);
-
-        System.out.println("entrer HH:mm:SS ");
-        DateTimeFormatter parseFormate = DateTimeFormatter.ofPattern("H:mm:ss");
-        Scanner scs = new Scanner(System.in);
-        String timeString = scs.nextLine();
-        LocalTime time = LocalTime.parse(timeString, parseFormate);
-        System.out.println(time);
-        datetime = date.atTime(time);
-        System.out.println(datetime);
-
-        return datetime;
+    private static void multisearch(Connection con ) throws SQLException{
+        System.out.println("entrez le nom de  l'objet ");
+        String nom = Lire.S();
+        ArrayList<String> motcle = new ArrayList<String>() ;
+        int i ;
+        System.out.println("entrez un mot clé à chercher :");
+        motcle.add(Lire.S());
+        System.out.println(" nouveau mot clé ? ( 0 pour non , autre nombre  pour oui");
+        i=Lire.i();
+        while(i!= 0){
+          System.out.println("entrez un mot clé à chercher :");
+        motcle.add(Lire.S());
+        System.out.println(" nouveau mot clé ? ( 0 pour non , autre nombre  pour oui");
+        i=Lire.i();  
+            
+            
+            
+            
+            
+        }
+        
+        if (!motcle.isEmpty()){
+        String query = "select * from objets where nom like '%"+nom+"%'";
+          query = query+ " or longuedescri like '%"+motcle.get(0)+"%'";
+       
+          if(motcle.size()!= 1){
+          for (int g = 1 ; g<motcle.size();g++){
+         query = query+ " or longuedescri like '%"+motcle.get(i)+"%'";
+            
+            
+        }
+       }
+          
+          try ( Statement st = con.createStatement()) {
+            try ( ResultSet tlu = st.executeQuery(query)) {
+                while(tlu.next()) {
+            
+              int id = tlu.getInt("ido");
+                    // ou par son numéro (la première colonne a le numéro 1)
+                    String noms = tlu.getString(2);
+                    String petitedescri = tlu.getString(3);
+                    String longuedescri =tlu.getString(4);
+                    String prixbase = tlu.getString(5);
+                    String categorie = tlu.getString(6);
+                    String vendeur = tlu.getString(7);
+                    String debut = tlu.getString(8);
+                    String fin = tlu.getString(9);
+                    System.out.println(id + " : " + noms + " prix(" + prixbase + ") vendeur :" + vendeur + " petite description : " + petitedescri + " ,longue description : " +
+                            longuedescri +", debut de l'enchere :" + debut + ", fin de l'enchere :" + fin);
+              
+          } 
+                
+                
+                
+                
+                
+                
+                
+            }
+        }
+       }
+        
+        
+    }
+    private static void searchdescri(Connection con) throws SQLException{
+        ArrayList<String> motcle = new ArrayList<String>() ;
+        int i ;
+        System.out.println("entrez un mot clé à chercher :");
+        motcle.add(Lire.S());
+        System.out.println(" nouveau mot clé ? ( 0 pour non , autre nombre  pour oui");
+        i=Lire.i();
+        while(i!= 0){
+          System.out.println("entrez un mot clé à chercher :");
+        motcle.add(Lire.S());
+        System.out.println(" nouveau mot clé ? ( 0 pour non , autre nombre  pour oui");
+        i=Lire.i();  
+            
+            
+            
+            
+            
+        }
+       if (motcle.size()!= 0){
+        String query = "select * from objets where";
+          query = query+ "longuedescri like '%"+motcle.get(0)+"%'";
+       
+          if(motcle.size()!= 1){
+          for (int g = 1 ; g<motcle.size();g++){
+         query = query+ " or longuedescri like '%"+motcle.get(i)+"%'";
+            
+            
+        }
+       }
+          
+          try ( Statement st = con.createStatement()) {
+            try ( ResultSet tlu = st.executeQuery(query)) {
+                while(tlu.next()) {
+            
+              int id = tlu.getInt("ido");
+                    // ou par son numéro (la première colonne a le numéro 1)
+                    String nom = tlu.getString(2);
+                    String petitedescri = tlu.getString(3);
+                    String longuedescri =tlu.getString(4);
+                    String prixbase = tlu.getString(5);
+                    String categorie = tlu.getString(6);
+                    String vendeur = tlu.getString(7);
+                    String debut = tlu.getString(8);
+                    String fin = tlu.getString(9);
+                    System.out.println(id + " : " + nom + " prix(" + prixbase + ") vendeur :" + vendeur + " petite description : " + petitedescri + " ,longue description : " +
+                            longuedescri +", debut de l'enchere :" + debut + ", fin de l'enchere :" + fin);
+              
+          } 
+                
+                
+                
+                
+                
+                
+                
+            }
+        }
+       }
+       
+        
+       
+       
+       
     }
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+private static void filprice(Connection con) throws SQLException{
+    System.out.println("entrer la valeur de prix minimale(0 pour pas de  limite");
+    Float min = Lire.f();
+    
+    ArrayList<Integer> objets = new ArrayList<Integer>() ;
+    
+    System.out.println("entrer la valeur de prix maximale(0 si pas de  limite");
+    double max = Lire.f();
+    if(max==0){
+        max = 1000000000;
+    }
+    try ( Statement st = con.createStatement()) {
+        String   query = " select ido from objets";
+       try ( ResultSet tlu = st.executeQuery(query)) {
+          while(tlu.next()) {
+            objets.add(tlu.getInt(1));
+              
+              
+          }
+           
+           
+           
+       } 
+       double lol;
+        for(int i =0 ; i<objets.size();i++){
+        int m = Integer.parseInt(objets.get(i).toString());
+        
+            lol= PriceActual(con, m);
+            if(min <=lol && lol<=max){
+                try ( Statement sts = con.createStatement()) {
+                    String   querys = " select * from objets";
+                    try ( ResultSet tlu = st.executeQuery(query)) {
+          while(tlu.next()) {
+            
+              int id = tlu.getInt("ido");
+                    // ou par son numéro (la première colonne a le numéro 1)
+                    String nom = tlu.getString(2);
+                    String petitedescri = tlu.getString(3);
+                    String longuedescri =tlu.getString(4);
+                    String prixbase = tlu.getString(5);
+                    String categorie = tlu.getString(6);
+                    String vendeur = tlu.getString(7);
+                    String debut = tlu.getString(8);
+                    String fin = tlu.getString(9);
+                    System.out.println(id + " : " + nom + " prix(" + prixbase + ") vendeur :" + vendeur + " petite description : " + petitedescri + " ,longue description : " +
+                            longuedescri +", debut de l'enchere :" + debut + ", fin de l'enchere :" + fin);
+              
+          }
+                    
+                    
+                    
+                    
+                    
+                }
+                
+            }
+            
+        }
+        
+        
+        
+        
+        
+        
+    }
+    
+    
+    
+    
+}
+ 
+
+    
+    
+}
 }
