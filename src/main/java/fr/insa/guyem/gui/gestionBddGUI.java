@@ -46,6 +46,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import org.controlsfx.control.RangeSlider;
 
 /**
  *
@@ -126,7 +127,7 @@ public class gestionBddGUI {
     }
    
     //permet de creer la colonne des offres des objets, en fonction d'une requete sql
-    public static void affichageQuery(Connection con,BorderPane mainEncheres,VueMain main,String query) throws SQLException {
+    public static void affichageQuery(Connection con,BorderPane mainEncheres,VueMain main,String query,float prixMin,float prixMax) throws SQLException {
         try ( Statement st = con.createStatement()) {
 
             try ( ResultSet tlu = st.executeQuery(query)) {
@@ -147,7 +148,8 @@ public class gestionBddGUI {
                     String fin = tlu.getString(9);
                     float prixActuel = priceActual(con,id);
 
-                    if (gestionBddGUI.tempsRestantMillis(gestionBddGUI.convertStringToDateTime(fin))<0){
+                    if (gestionBddGUI.tempsRestantMillis(gestionBddGUI.convertStringToDateTime(fin))<0 
+                          || prixMin>prixActuel || prixMax<prixActuel){
                         continue;
                     }
                     Label lNom = new Label(nom);
@@ -292,7 +294,7 @@ public class gestionBddGUI {
     //affiche tous les objets, notamment quand on arrive sur la session
     public static void tousLesObjets(Connection con, BorderPane mainEncheres,VueMain main,String idUtilisateur)throws SQLException{
         String query = "select * from objets where vendeur <>" +idUtilisateur;
-        affichageQuery(con,mainEncheres,main,query);
+        affichageQuery(con,mainEncheres,main,query,0,returnPrixPlusHaut(con,main));
     }
     
     //Methode pour creer un nouvel objet
@@ -450,6 +452,14 @@ public class gestionBddGUI {
         Button bToutDeselectionner = new Button("Tout déselectionner");
         bAppliquer.setFont(Font.font("Montserra",FontWeight.BOLD,14));
         lFiltre.setFont(Font.font("Montserra",FontWeight.BOLD,14));
+        Label lFiltrePrix = new Label("Filtre par prix :");
+        lFiltrePrix.setFont(Font.font("Montserra",FontWeight.BOLD,14));
+        RangeSlider slider = new RangeSlider(0, returnPrixPlusHaut(con,main),0,returnPrixPlusHaut(con,main));
+        slider.setShowTickLabels(true);
+        slider.setShowTickMarks(true);
+        slider.setMajorTickUnit(ordreDeGrandeur(returnPrixPlusHaut(con,main)));
+        slider.setBlockIncrement(10);
+        slider.setMinWidth(200);
         
         VBox vbFiltre = new VBox(lFiltre);
         ArrayList<String> listeCatSelected = new ArrayList<String>();
@@ -474,12 +484,14 @@ public class gestionBddGUI {
             });
         }
         
-        
+        vbFiltre.getChildren().add(lFiltrePrix);
+        vbFiltre.getChildren().add(slider);
         vbFiltre.getChildren().add(bToutSelectionner);
         vbFiltre.getChildren().add(bToutDeselectionner);
         vbFiltre.getChildren().add(bAppliquer);
         vbFiltre.setSpacing(5);
-        vbFiltre.setPadding(new Insets(5));
+        vbFiltre.setPadding(new Insets(15));
+        
         mainEncheres.setLeft(vbFiltre);
         
         TextField tfRechercher = new TextField();
@@ -506,11 +518,11 @@ public class gestionBddGUI {
         
         //Evenements :
         bAppliquer.setOnMouseClicked((t) -> {
-            applicationFiltre(listeCatSelected,tfRechercher,main,con,mainEncheres);
+            applicationFiltre(listeCatSelected,tfRechercher,main,con,mainEncheres,(float)slider.getLowValue(),(float)slider.getHighValue());
         });
         
         bRechercher.setOnMouseClicked((t) -> {
-            applicationFiltre(listeCatSelected,tfRechercher,main,con,mainEncheres);
+            applicationFiltre(listeCatSelected,tfRechercher,main,con,mainEncheres,(float)slider.getLowValue(),(float)slider.getHighValue());
         });
         
         bToutSelectionner.setOnMouseClicked((t) -> {
@@ -535,7 +547,7 @@ public class gestionBddGUI {
         
     }
     
-    public static void applicationFiltre(ArrayList<String> listeCatSelected,TextField tfRechercher,VueMain main,Connection con,BorderPane mainEncheres){
+    public static void applicationFiltre(ArrayList<String> listeCatSelected,TextField tfRechercher,VueMain main,Connection con,BorderPane mainEncheres,float prixMin,float prixMax){
         try {
                 //Query finale :
                 String bigQuery="";
@@ -550,10 +562,10 @@ public class gestionBddGUI {
                     bigQuery=bigQuery+ query + "and upper(nom) like upper('%" + tfRechercher.getText() + "%')";
 
                 } else {
-                    bigQuery= "select * from objets where 1=0 and upper(nom) like upper('%" + tfRechercher.getText() + "%')";
+                    bigQuery= "select * from objets where 1=0";
                 }
                 
-                gestionBddGUI.affichageQuery(con, mainEncheres, main,bigQuery);
+                gestionBddGUI.affichageQuery(con, mainEncheres, main,bigQuery,prixMin,prixMax);
             } catch (SQLException ex) {
                 Logger.getLogger(Encheres.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -713,9 +725,29 @@ public class gestionBddGUI {
         
     }
       
+    public static float returnPrixPlusHaut(Connection con,VueMain main) throws SQLException {
+        try ( Statement st = con.createStatement()) {
+            
+            try ( ResultSet tlu = st.executeQuery("select * from objets,enchere where enchere.sur=objets.ido and vendeur <> "+main.getInfoSession().getCurrentUserId()+" order by montant desc ")){
+                tlu.next();
+                return Float.valueOf(tlu.getString(4));
+                
+            }
+        }
+    }
     
-    //Page vos ventes : voir objets vendus
-    //Relier recherche à bdd 
+    public static int ordreDeGrandeur(float range) {
+        range=range/3;
+        int or = 1;
+        while (range > 10) {
+            or = or * 10;
+            range = range / 10;
+        }
+        System.out.println(or);
+        return or;
+    }
+    
+    //Page vos ventes : voir objets vendus 
     //Faire exceptions création nouvel objet, nouveau profil
     //bouton voir mes objets vendus
     //dans mes encheres terminees avoir message : vous avez acheté cet objet, ou vous n'avez pas acheté cet objet 

@@ -39,7 +39,7 @@ public class VosVentes extends BorderPane{
         gestionBddGUI.bandeauUtilisateur(con, main, this);
         
         String query ="select * from objets where vendeur ="+main.getInfoSession().getCurrentUserId();
-        gestionBddGUI.affichageQuery(con, this, main, query);
+        gestionBddGUI.affichageQuery(con, this, main, query,0,1000000000);
        
         
         bHome.setOnAction((t) -> {
