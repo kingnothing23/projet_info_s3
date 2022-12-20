@@ -220,22 +220,7 @@ public class gestionBddGUI {
         }
     }
 
-    //Creation du filtre des categories
-    public static void filtreCategories (Connection con, VueMain main, BorderPane mainEncheres, ArrayList<String> listeIdCat) throws SQLException {
-//        String finQuery="";
-//        if (listeIdCat.size()>0){
-//            finQuery = finQuery+listeIdCat.get(0);
-//            for (int i=1;i<listeIdCat.size();i++){
-//                finQuery = finQuery+ " or categorie = "+ listeIdCat.get(i);
-//            }
-//            String query = "select * from objets where (categorie = "+finQuery+" )and vendeur <> "+main.getInfoSession().getCurrentUserId();
-//            affichageQuery(con,mainEncheres,main,query);
-//
-//        }else{
-//            affichageQuery(con,mainEncheres,main,"select * from objets where 1=0");
-//        }
-        
-    }
+
     
     //Creation du bandeau utilisateur
     public static void bandeauUtilisateur (Connection con,VueMain main,BorderPane mainPage) throws SQLException{
@@ -457,7 +442,7 @@ public class gestionBddGUI {
         RangeSlider slider = new RangeSlider(0, returnPrixPlusHaut(con,main),0,returnPrixPlusHaut(con,main));
         slider.setShowTickLabels(true);
         slider.setShowTickMarks(true);
-        slider.setMajorTickUnit(ordreDeGrandeur(returnPrixPlusHaut(con,main)));
+        slider.setMajorTickUnit(returnPrixPlusHaut(con,main)/5);
         slider.setBlockIncrement(10);
         slider.setMinWidth(200);
         
@@ -570,6 +555,7 @@ public class gestionBddGUI {
                 Logger.getLogger(Encheres.class.getName()).log(Level.SEVERE, null, ex);
             }
     }
+    
     public static long tempsRestantMillis(LocalDateTime ldtFin){
         long resultat = ChronoUnit.MILLIS.between(LocalDateTime.now(), ldtFin);
         return resultat;
@@ -727,25 +713,38 @@ public class gestionBddGUI {
       
     public static float returnPrixPlusHaut(Connection con,VueMain main) throws SQLException {
         try ( Statement st = con.createStatement()) {
-            
+            float prixPlusHautEnchere=0;
+            float prixPlusHautBase=0;
             try ( ResultSet tlu = st.executeQuery("select * from objets,enchere where enchere.sur=objets.ido and vendeur <> "+main.getInfoSession().getCurrentUserId()+" order by montant desc ")){
-                tlu.next();
-                return Float.valueOf(tlu.getString(13));
+                while (tlu.next()){
+                    prixPlusHautEnchere = Float.valueOf(tlu.getString(13));
+                    String fin = tlu.getString(9);
+                    if (gestionBddGUI.tempsRestantMillis(gestionBddGUI.convertStringToDateTime(fin))>0){
+                        break;
+                    }
+                }
                 
+            }
+            try ( ResultSet tlu = st.executeQuery("select * from objets where vendeur <> "+main.getInfoSession().getCurrentUserId()+" order by prixbase desc ")){
+                while (tlu.next()){
+                    tlu.next();
+                    prixPlusHautBase = Float.valueOf(tlu.getString(5));
+                    String fin = tlu.getString(9);
+                    if (gestionBddGUI.tempsRestantMillis(gestionBddGUI.convertStringToDateTime(fin))>0){
+                        break;
+                    }
+                }
+            }
+            if (prixPlusHautEnchere>prixPlusHautBase){
+                System.out.println(prixPlusHautEnchere);
+                return prixPlusHautEnchere;
+            }else{
+                System.out.println(prixPlusHautBase);
+                return prixPlusHautBase;
             }
         }
     }
     
-    public static int ordreDeGrandeur(float range) {
-        range=range/3;
-        int or = 1;
-        while (range > 10) {
-            or = or * 10;
-            range = range / 10;
-        }
-        System.out.println(or);
-        return or;
-    }
     
     //Page vos ventes : voir objets vendus 
     //Faire exceptions création nouvel objet, nouveau profil
@@ -755,5 +754,4 @@ public class gestionBddGUI {
     //Se termine dans ... pour mes enchères
     //Page Objet différente pour vendeur et acheteur
     //image par objet ?
-    //trie par prix ?
 }
