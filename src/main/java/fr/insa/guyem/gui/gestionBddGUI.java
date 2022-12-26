@@ -127,7 +127,7 @@ public class gestionBddGUI {
     }
    
     //permet de creer la colonne des offres des objets, en fonction d'une requete sql
-    public static void affichageQuery(Connection con,BorderPane mainEncheres,VueMain main,String query,float prixMin,float prixMax) throws SQLException {
+    public static void affichageQuery(Connection con,BorderPane mainEncheres,VueMain main,String query,float prixMin,float prixMax,boolean isExpired) throws SQLException {
         try ( Statement st = con.createStatement()) {
 
             try ( ResultSet tlu = st.executeQuery(query)) {
@@ -150,7 +150,13 @@ public class gestionBddGUI {
 
                     if (gestionBddGUI.tempsRestantMillis(gestionBddGUI.convertStringToDateTime(fin))<0 
                           || prixMin>prixActuel || prixMax<prixActuel){
-                        continue;
+                        if (!isExpired){
+                            continue;
+                        }
+                    }else{
+                        if (isExpired){
+                            continue;
+                        }
                     }
                     Label lNom = new Label(nom);
                     lNom.setFont(Font.font("Montserra", FontWeight.BOLD, 20));
@@ -168,19 +174,27 @@ public class gestionBddGUI {
                     Label lMessagePrix = new Label("Enchère la plus haute\nactuellement :");
                     lPrix.setFont(Font.font("Montserra", FontWeight.EXTRA_BOLD, 26));
                     lMessagePrix.setFont(Font.font("Montserra", FontWeight.BOLD, 10));
-                    Label lTempsRestant = new Label("Il reste\n"+gestionBddGUI.stringTempsRestant(convertStringToDateTime(fin)));
-                    lTempsRestant.setFont(Font.font("Montserra", FontWeight.BOLD, 8));
+                    Label lInfoComp = new Label("Il reste\n"+gestionBddGUI.stringTempsRestant(convertStringToDateTime(fin)));
+                    lInfoComp.setFont(Font.font("Montserra", FontWeight.BOLD, 8));
                     
-                    Label lCategorie = new Label ("Catégorie : "+gestionBddGUI.returnNomCategorieFromIdObjet(con, String.valueOf(id)));
+                    Label lCategorie = new Label ("Catégorie : "+gestionBddGUI.returnNomCategorieFromIdObjet(con, String.valueOf(String.valueOf(id))));
                     lCategorie.setFont(Font.font("Montserra", FontWeight.BOLD, 10));
                     
                     if (main.getInfoSession().getCurrentUserId() == Integer.parseInt(vendeur)){
                         lVendeur.setText("Vous êtes le vendeur \nde cet objet");
                     }
-                    
+                    if (isExpired){
+                        if (priceActual(con,id) == Float.valueOf(prixbase)){
+                            lMessagePrix.setText("Cet objet n'a\npas été vendu\nEnchère initiale :");
+                            lInfoComp.setText("");
+                        }else{
+                            lMessagePrix.setText("Vendu pour :");
+                            lInfoComp.setText("Vendu à "+returnNomUtilisateur(con,Integer.valueOf(returnIdAcheteur(con,String.valueOf(id)))));
+                        }
+                    }
                     
                     VBox vb1 = new VBox(lNom, lDescription,lVendeur,lCategorie);
-                    VBox vb2 = new VBox(lMessagePrix,lPrix,lTempsRestant);
+                    VBox vb2 = new VBox(lMessagePrix,lPrix,lInfoComp);
                     vb1.setLayoutX(15);
                     vb1.setSpacing(5);
                     vb2.setLayoutX(200);
@@ -193,7 +207,12 @@ public class gestionBddGUI {
                     
                     pOffreSingle.setOnMouseClicked((t) -> {
                         try {
-                            mainEncheres.setCenter(new PageObjet(main,mainEncheres,id,nom,courtedescri,longuedescri,prixActuel));
+                            if (vendeur.equals(String.valueOf(main.getInfoSession().getCurrentUserId()))){
+                                mainEncheres.setCenter(new PageObjet(main,mainEncheres,id,nom,courtedescri,longuedescri,prixActuel,true,convertStringToDateTime(fin)));
+                            }else{
+                                mainEncheres.setCenter(new PageObjet(main,mainEncheres,id,nom,courtedescri,longuedescri,prixActuel,false,convertStringToDateTime(fin)));
+                            }
+                            
                         } catch (SQLException ex) {
                             Logger.getLogger(gestionBddGUI.class.getName()).log(Level.SEVERE, null, ex);
                         }
@@ -279,7 +298,7 @@ public class gestionBddGUI {
     //affiche tous les objets, notamment quand on arrive sur la session
     public static void tousLesObjets(Connection con, BorderPane mainEncheres,VueMain main,String idUtilisateur)throws SQLException{
         String query = "select * from objets where vendeur <>" +idUtilisateur;
-        affichageQuery(con,mainEncheres,main,query,0,returnPrixPlusHaut(con,main));
+        affichageQuery(con,mainEncheres,main,query,0,returnPrixPlusHaut(con,main),false);
     }
     
     //Methode pour creer un nouvel objet
@@ -439,10 +458,17 @@ public class gestionBddGUI {
         lFiltre.setFont(Font.font("Montserra",FontWeight.BOLD,14));
         Label lFiltrePrix = new Label("Filtre par prix :");
         lFiltrePrix.setFont(Font.font("Montserra",FontWeight.BOLD,14));
-        RangeSlider slider = new RangeSlider(0, returnPrixPlusHaut(con,main),0,returnPrixPlusHaut(con,main));
+        RangeSlider slider;
+        if (returnPrixPlusHaut(con,main)>0){
+            slider = new RangeSlider(0, returnPrixPlusHaut(con,main),0,returnPrixPlusHaut(con,main));
+            slider.setMajorTickUnit(returnPrixPlusHaut(con,main)/5);
+        }else{
+            slider = new RangeSlider(0, 1000,0,1000);
+            slider.setMajorTickUnit(100);
+        }
+        
         slider.setShowTickLabels(true);
         slider.setShowTickMarks(true);
-        slider.setMajorTickUnit(returnPrixPlusHaut(con,main)/5);
         slider.setBlockIncrement(10);
         slider.setMinWidth(200);
         
@@ -550,7 +576,7 @@ public class gestionBddGUI {
                     bigQuery= "select * from objets where 1=0";
                 }
                 
-                gestionBddGUI.affichageQuery(con, mainEncheres, main,bigQuery,prixMin,prixMax);
+                gestionBddGUI.affichageQuery(con, mainEncheres, main,bigQuery,prixMin,prixMax,false);
             } catch (SQLException ex) {
                 Logger.getLogger(Encheres.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -561,6 +587,7 @@ public class gestionBddGUI {
         return resultat;
         
     }
+
     
     public static String stringTempsRestant(LocalDateTime ldtFin){
   
@@ -663,22 +690,53 @@ public class gestionBddGUI {
                             }
                         }else{
                             if (encherePlusHaute.equals(mémoireMontantPlusHautUtil)){
-                            lEncherePlusHaute.setText("Votre enchère de montant : "+mémoireMontantPlusHautUtil+" € est la plus haute sur cet objet");
-                            lVotreEnchere.setText("");
+                                lEncherePlusHaute.setText("Votre enchère de montant : "+mémoireMontantPlusHautUtil+" € est la plus haute sur cet objet");
+                                lVotreEnchere.setText("");
                             }else{
                                 lEncherePlusHaute = new Label("Enchère la plus haute : "+encherePlusHaute+" €");
-                                lVotreEnchere = new Label(" votre enchère : "+mémoireMontantPlusHautUtil+" € ");
+                                lVotreEnchere = new Label("Votre enchère : "+mémoireMontantPlusHautUtil+" € ");
                             }
                         }
                         
                         lEncherePlusHaute.setFont(Font.font("Montserra",FontWeight.BOLD,14));
                         lVotreEnchere.setFont(Font.font("Montserra",FontWeight.BOLD,14));
+                        VBox vbMessages;
                         
-                        HBox hbTitledPane=new HBox(tpObjet,lEncherePlusHaute,lVotreEnchere);
+                        if(!isExpired){
+                            Button bVoirPageObjet = new Button("Voir page objet");
+                            vbMessages = new VBox(lEncherePlusHaute,lVotreEnchere,bVoirPageObjet);
+                            try ( Statement st2 = con.createStatement()) {
+                                String query ="select * from objets where ido ="+mémoireObjet;
+                                try ( ResultSet tlu2 = st2.executeQuery(query)) {
+                                    tlu2.next();
+                                    int id = tlu2.getInt("ido");
+                                    String nom = tlu2.getString(2);
+                                    String courtedescri = tlu2.getString(3);
+                                    String longuedescri = tlu2.getString(4);
+                                    String fin2 = tlu2.getString(9);
+                                    float prixActuel = priceActual(con, id);
+
+                                    bVoirPageObjet.setOnAction((t) -> {
+                                        try {
+                                            mainPage.setCenter(new PageObjet(main, mainPage, id, nom,courtedescri,longuedescri,prixActuel,false,convertStringToDateTime(fin2)));
+                                            bandeauUtilisateur(con,main,mainPage);
+                                            mainPage.setTop(null);
+                                        } catch (SQLException ex) {
+                                            Logger.getLogger(NouvelleVente.class.getName()).log(Level.SEVERE, null, ex);
+                                        }
+                                    });
+                                }
+                            }
+                        }else{
+                            vbMessages = new VBox(lEncherePlusHaute,lVotreEnchere);
+                        }
+                        
+                        HBox hbTitledPane=new HBox(tpObjet,vbMessages);
                         hbTitledPane.setStyle("-fx-padding: 10; -fx-background-color: cornsilk;");
                         hbTitledPane.setSpacing(15);
                         vbHistorique.getChildren().add(hbTitledPane);
-                    }
+                        
+                        
                     
                     //on créé la ligne d'infos de chaque enchère :
                     lMsgChaqueEnchere= new Label("Montant de l'enchère: " +montantEnchere+" €"+"  Date et heure : "+dateHeure);
@@ -688,10 +746,9 @@ public class gestionBddGUI {
                 }
                 spHistorique.setContent(vbHistorique);
                 mainPage.setCenter(spHistorique);
+                }
             }
         }
-        
-         
     }
     
     public static String returnEnchereUtil(Connection con,String idUtil,String idObjet,VueMain main) throws SQLException{
@@ -727,7 +784,6 @@ public class gestionBddGUI {
             }
             try ( ResultSet tlu = st.executeQuery("select * from objets where vendeur <> "+main.getInfoSession().getCurrentUserId()+" order by prixbase desc ")){
                 while (tlu.next()){
-                    tlu.next();
                     prixPlusHautBase = Float.valueOf(tlu.getString(5));
                     String fin = tlu.getString(9);
                     if (gestionBddGUI.tempsRestantMillis(gestionBddGUI.convertStringToDateTime(fin))>0){
@@ -736,22 +792,44 @@ public class gestionBddGUI {
                 }
             }
             if (prixPlusHautEnchere>prixPlusHautBase){
-                System.out.println(prixPlusHautEnchere);
                 return prixPlusHautEnchere;
             }else{
-                System.out.println(prixPlusHautBase);
                 return prixPlusHautBase;
+            }
+        }
+    }
+       
+    public static boolean emailExisting(Connection con,String email) throws SQLException {
+        try ( Statement st = con.createStatement()) {
+            try ( ResultSet tlu = st.executeQuery("select * from utilisateur where mail ='"+email+"'")){
+                if (tlu.next()){
+                    return true;
+                }else {
+                    return false;
+                }
+            }
+        }
+    }
+    
+    public static String returnIdAcheteur(Connection con,String ido) throws SQLException{
+        try ( Statement st = con.createStatement()) {
+            try ( ResultSet tlu = st.executeQuery("select * from enchere where sur ="+ido+" order by montant desc")){
+                tlu.next();
+                return tlu.getString(2);
+            }
+        }
+    }
+    
+    public static boolean wasSold(Connection con,String ido)throws SQLException{
+        try ( Statement st = con.createStatement()) {
+            try ( ResultSet tlu = st.executeQuery("select * from enchere where sur ="+ido)){
+                return tlu.next();
             }
         }
     }
     
     
-    //Page vos ventes : voir objets vendus 
-    //Faire exceptions création nouvel objet, nouveau profil
-    //bouton voir mes objets vendus
-    //dans mes encheres terminees avoir message : vous avez acheté cet objet, ou vous n'avez pas acheté cet objet 
-    //Pouvoir enchérir depuis page mes enchères
-    //Se termine dans ... pour mes enchères
-    //Page Objet différente pour vendeur et acheteur
+    //Pas essentiel :
     //image par objet ?
+    //roles des utilisateurs
 }

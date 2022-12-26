@@ -16,6 +16,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,12 +42,12 @@ public class gestionbdd {
 
     public static Connection defautConnect()
             throws ClassNotFoundException, SQLException {
-        return connectGeneralPostGres("localhost", 5439, "postgres", "postgres", "emgu7747");
+        return connectGeneralPostGres("localhost", 5439, "postgres", "postgres", "pass");
     }
 
     public static void menu(Connection con) throws SQLException {
         int rep = -1;
-        while (rep != 0) {
+        while (rep != 0) {  
             System.out.println("Menu BdD Enchere");
             System.out.println("=============");
             System.out.println("1) créer/recréer la BdD initiale");
@@ -169,8 +171,8 @@ public class gestionbdd {
                      ido integer not null primary key 
                      generated always as identity,
                      nom varchar(30) not null,
-                     petitedescri varchar(100) not null,
-                     longuedescri varchar(100),
+                     petitedescri varchar(50) not null,
+                     longuedescri varchar(300),
                      prixbase real not null ,
                      categorie integer not null,
                      vendeur integer not null,
@@ -215,6 +217,7 @@ public class gestionbdd {
                       add constraint fk_enchere_sur
                         foreign key (sur) references objets(ido)                        
                   """);
+            createAllCategories(con);
 //           st.executeUpdate(
 //                   """
 //                   alter table aime
@@ -236,7 +239,14 @@ public class gestionbdd {
             throw ex;
         }
     }
-
+    
+    public static void createAllCategories(Connection con) throws SQLException{
+        List<String> listeCat= Arrays.asList("Art et Collection","Auto & Moto","High-Tech","Maison & Jardin","Jouets & Jeux","Culture & Loisirs","Mode") ;
+        for (int i =0;i<listeCat.size();i++){
+            createcategorie(con,listeCat.get(i));
+        }
+    }
+    
     public static void deleteSchema(Connection con) throws SQLException {
         try ( Statement st = con.createStatement()) {
             // pour être sûr de pouvoir supprimer, il faut d'abord supprimer les liens

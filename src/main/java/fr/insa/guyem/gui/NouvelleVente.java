@@ -11,12 +11,14 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.collections.FXCollections;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
@@ -25,6 +27,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
@@ -33,7 +36,7 @@ import javafx.scene.text.TextAlignment;
  *
  * @author fears
  */
-public class NouvelleVente extends VBox{
+public class NouvelleVente extends ScrollPane{
     public NouvelleVente(VueMain main,BorderPane mainEncheres) throws SQLException{
         Connection con =main.getInfoSession().getConBdd(); //Ref lien a la bdd
         
@@ -74,6 +77,9 @@ public class NouvelleVente extends VBox{
             listeNomsCat.add(gestionBddGUI.returnNomCategorie(con, listeIdCat.get(i)));
         }
         
+        Label lErreurs =new Label("");   
+        lErreurs.setFont(Font.font("Montserra",12));
+        lErreurs.setTextFill(Color.RED);
         
         ChoiceBox cbCategorie = new ChoiceBox(FXCollections.observableArrayList(listeNomsCat));
         gp.add(cbCategorie,1,10);
@@ -98,6 +104,7 @@ public class NouvelleVente extends VBox{
         gp.add(tHourFin, 1, 9);
         ToggleButton tbCreationVente = new ToggleButton("Création de la vente");
         gp.add(tbCreationVente,0,12);
+        gp.add(lErreurs,0,13);
         CheckBox cb = new CheckBox();
         gp.add(cb, 1, 11);
         Label lCb = new Label("J'accepte les Conditions générales de Vente :");
@@ -112,8 +119,12 @@ public class NouvelleVente extends VBox{
         view.setFitHeight(50);
         view.setFitWidth(50);
         bHome.setGraphic(view);
-        this.getChildren().addAll(bHome,gp);
-        this.setSpacing(10);
+        
+        
+        VBox vbContent = new VBox(bHome,gp);
+        vbContent.setSpacing(10);
+        this.setContent(vbContent);
+        this.setPadding(new Insets(15));
         
         cb.setOnAction((t) -> {
             if (tbCreationVente.isDisabled()){
@@ -139,15 +150,18 @@ public class NouvelleVente extends VBox{
                 LocalDateTime ldtDateFin = gestionBddGUI.convertDateTime(tDateFin.getText(),tHourFin.getText());
                 
                 if (gestionBddGUI.tempsRestantMillis(ldtDateFin)<0 || ldtDateFin.isBefore(ldtDateDebut)){
-                    System.out.println("ERREUR A GERER");
+                    lErreurs.setText("Temps d'enchère impossible, veuillez modifier puis réessayer");
+                }else if(tNom.getText().isEmpty()==true || tPrixInitial.getText().isEmpty()==true || tPetitedesc.getText().isEmpty()==true || cbCategorie.getSelectionModel().getSelectedIndex() == -1){
+                    lErreurs.setText("Certains champs n'ont pas été remplis, veuillez réessayer");
                 }else{
                     gestionBddGUI.createObjets(con, tNom.getText(), Double.parseDouble(tPrixInitial.getText()), tPetitedesc.getText(),
                         tLonguedesc.getText(),Integer.valueOf(listeIdCat.get(cbCategorie.getSelectionModel().getSelectedIndex())),main.getInfoSession().getCurrentUserId() , ldtDateDebut, ldtDateFin);
                     main.setCenter(new Encheres(main));
                 }
-            } catch (SQLException ex) {
-                Logger.getLogger(NouvelleVente.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (Exception ex) {
+                lErreurs.setText("Il y a une erreur dans les champs, veuillez modifier puis réessayer");
             }
+           
         });
     }
 }

@@ -74,7 +74,7 @@ public class Login extends BorderPane{
                     lErreur.setText("Mail ou mot de pass non reconnu, veuillez réessayer");
                 }
             } catch (SQLException ex) {
-                Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
+                lErreur.setText("Mail ou mot de pass non reconnu, veuillez réessayer");
             }
         });
         

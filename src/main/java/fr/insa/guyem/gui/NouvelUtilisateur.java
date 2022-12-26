@@ -106,23 +106,32 @@ public class NouvelUtilisateur extends VBox{
             if (tNom.getText().isEmpty()==false && tPrenom.getText().isEmpty()==false && pPass.getText().isEmpty()==false
                     && tEmail.getText().isEmpty() == false && tCodePostal.getText().isEmpty() == false){
                 if (pConfirmPass.getText().equals(pPass.getText())) {
+                    Connection con = main.getInfoSession().getConBdd();
+                    
                     try {
-                        Connection con = main.getInfoSession().getConBdd();
-                        gestionBddGUI.createUtilisateur(con, tNom.getText(), tPrenom.getText(),
-                                pPass.getText(), tEmail.getText(), tCodePostal.getText());
+                        if(gestionBddGUI.emailExisting(con, tEmail.getText())){
+                            lErreur.setText("Cet email est déjà utilisé, veuillez réessayer");
+                        }else{
+                            gestionBddGUI.createUtilisateur(con, tNom.getText(), tPrenom.getText(),
+                                    pPass.getText(), tEmail.getText(), tCodePostal.getText());
 
-                        int userId = gestionBddGUI.connectuser(con,
-                                tEmail.getText(), pPass.getText());
-                        main.getInfoSession().setCurrentUserId(userId);
-                        main.getInfoSession().setCurrentUserName(gestionBddGUI.returnNomUtilisateur(con, userId));
-                        if (userId != -1) {
-                            main.setCenter(new Encheres(main));
+                            int userId = gestionBddGUI.connectuser(con,
+                                    tEmail.getText(), pPass.getText());
+                            main.getInfoSession().setCurrentUserId(userId);
+                            main.getInfoSession().setCurrentUserName(gestionBddGUI.returnNomUtilisateur(con, userId));
+                            if (userId != -1) {
+                                main.setCenter(new Encheres(main));
+                            }
                         }
                     } catch (SQLException ex) {
-                        Logger.getLogger(NouvelUtilisateur.class.getName()).log(Level.SEVERE, null, ex);
-                        lErreur.setText("Il y a eu une erreur dans la création de votre compte, veuillez réessayer");
+                        lErreur.setText("Il y a eu une erreur dans la création de votre compte, veuillez réessayer en utilisant moins 30 caractères pour vos informations");
                     }
-                }}
+                }else{
+                    lErreur.setText("Le mot de passe n'est pas le même que la confirmation, veuillez réessayer");
+                }
+            }else{
+                lErreur.setText("Veuillez remplir tous les champs");
+            }
         });
     }
 }

@@ -37,8 +37,18 @@ public class PageObjet extends ScrollPane {
     public float nouveauPrixActuel;
     
     public PageObjet (VueMain main, BorderPane mainEncheres,int idObjet,String nomObjet,String petiteDescri,String longueDescri
-    ,float prixActuel) throws SQLException{
+    ,float prixActuel,boolean isUserSeller,LocalDateTime fin) throws SQLException{
         Connection con =main.getInfoSession().getConBdd(); //Ref lien a la bdd
+        Boolean isExpired;
+        Boolean isSold = false;
+                
+        if(gestionBddGUI.tempsRestantMillis(fin)<0){
+            isExpired=true;
+            isSold = gestionBddGUI.wasSold(con,String.valueOf(idObjet));
+        }else{
+            isExpired=false;
+        }
+        
         
         GridPane gp = new GridPane();
         Label lMessage = new Label("Présentation de l'objet en vente : ");
@@ -60,25 +70,70 @@ public class PageObjet extends ScrollPane {
         lLongueDescri2.setMaxWidth(300);
         lLongueDescri2.setMaxHeight(60);
         lLongueDescri2.setEditable(false);
-        Label lPrixActuel1 = new Label ("Enchère la plus haute actuellement :");
+        Label lPrixActuel1 = new Label ("Enchère la plus haute actuellement : ");
         lPrixActuel1.setFont(Font.font("Montserra",FontWeight.BOLD,16));
         Label lPrixActuel2 = new Label(Float.toString(prixActuel)+" €");
         lPrixActuel2.setFont(Font.font("Montserra",FontWeight.BOLD,16));
         Label lVotreEnchere = new Label ("Votre enchère est de "+gestionBddGUI.returnEnchereUtil(con,String.valueOf( main.getInfoSession().getCurrentUserId()),String.valueOf(idObjet), main)+" €");
         lVotreEnchere.setFont(Font.font("Montserra",FontWeight.BOLD,16));
+        Label lChrono =new Label("Il reste "+gestionBddGUI.stringTempsRestant(fin)+" avant la fin de cette enchère");
+        lChrono.setFont(Font.font("Montserra",FontWeight.BOLD,16));
         
+        if(isUserSeller){
+            if (isExpired){
+                lChrono.setText("Cette enchère est terminée !");
+                if(!isSold){
+                    lPrixActuel1.setText("Cet objet n'a pas été vendu");
+                    lPrixActuel2.setText("");
+                    lVotreEnchere.setText("");
+                }else{
+                    lPrixActuel1.setText("Vendu au prix de : ");
+                    lVotreEnchere.setText("Vendu à : "+gestionBddGUI.returnNomUtilisateur(con,Integer.valueOf(gestionBddGUI.returnIdAcheteur(con,String.valueOf(idObjet)))));
+                }
+            }
+            else{
+                lVotreEnchere.setText("");
+            }
+        }else{
+            Label lCb = new Label("De combien voulez-vous enchérir ?");
+            TextField tCb = new TextField();
+            ToggleButton bCb = new ToggleButton("Valider immédiatement l'enchère");
+            bCb.setDisable(true);
+            VBox vbEncherir = new VBox(lCb,tCb,bCb);
+            TitledPane tpEncherir = new TitledPane("Encherir",vbEncherir);
+            tpEncherir.setExpanded(false);
+            vbEncherir.setSpacing(5);
+            gp.add(tpEncherir, 0, 8);
+            
+            
+            //Evenements liés à l'enchere
+            tCb.textProperty().addListener(observable -> {
+            try{
+                nouveauPrixActuel = gestionBddGUI.priceActual(con, idObjet); //On prend bien en compte le prix à l'instantanéé
+                if(Float.valueOf(tCb.getText()) > nouveauPrixActuel +1){
+                    bCb.setDisable(false);
+                }else{
+                    bCb.setDisable(true);
+                }
+            }catch (NumberFormatException nfe){
+                bCb.setDisable(true);
+            } catch (SQLException ex) {
+                Logger.getLogger(PageObjet.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
+            
+            bCb.setOnAction((t) -> {
+                try {
+                    if (gestionBddGUI.tempsRestantMillis(fin)>0){
+                        gestionBddGUI.createEnchere(con, idObjet, main.getInfoSession().getCurrentUserId(), Float.valueOf(tCb.getText()), LocalDateTime.now());
+                        this.refreshPage(main, mainEncheres, idObjet, nomObjet, petiteDescri, longueDescri, Float.valueOf(tCb.getText()),isUserSeller,fin);
+                    }
+                } catch (SQLException ex) {
+                    Logger.getLogger(PageObjet.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });
+        }
         
-        Label lCb = new Label("De combien voulez-vous enchérir ?");
-        TextField tCb = new TextField();
-        ToggleButton bCb = new ToggleButton("Valider immédiatement l'enchère");
-        bCb.setDisable(true);
-        
-        
-        
-        VBox vbEncherir = new VBox(lCb,tCb,bCb);
-        TitledPane tpEncherir = new TitledPane("Encherir",vbEncherir);
-        tpEncherir.setExpanded(false);
-        vbEncherir.setSpacing(5);
         
         gp.add(lMessage, 0, 0,2,1);
         gp.add(lNomObjet, 0, 1);
@@ -90,7 +145,7 @@ public class PageObjet extends ScrollPane {
         gp.add(lPrixActuel1,0,5);
         gp.add(lPrixActuel2, 1, 5);
         gp.add(lVotreEnchere, 0, 6);
-        gp.add(tpEncherir, 0, 7);
+        gp.add(lChrono,0,7);
         
         gp.setAlignment(Pos.CENTER);
         gp.setVgap(10);
@@ -111,7 +166,7 @@ public class PageObjet extends ScrollPane {
         VBox vbConteneur = new VBox(hbButtons,gp);
         hbButtons.setSpacing(5);
         vbConteneur.setSpacing(10);
-        vbConteneur.setStyle("-fx-padding: 10; -fx-background-color: cornsilk;");
+        this.setStyle("-fx-padding: 10; -fx-background: cornsilk; -fx-background-color: cornsilk");
         this.setContent(vbConteneur);
        
         //Gestion des evenements
@@ -123,30 +178,6 @@ public class PageObjet extends ScrollPane {
             }
         });
         
-        tCb.textProperty().addListener(observable -> {
-            try{
-                nouveauPrixActuel = gestionBddGUI.priceActual(con, idObjet); //On prend bien en compte le prix à l'instantanéé
-                if(Float.valueOf(tCb.getText()) > nouveauPrixActuel +1){
-                    bCb.setDisable(false);
-                }else{
-                    bCb.setDisable(true);
-                }
-            }catch (NumberFormatException nfe){
-                bCb.setDisable(true);
-            } catch (SQLException ex) {
-                Logger.getLogger(PageObjet.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        });
-        
-        bCb.setOnAction((t) -> {
-            try {
-                gestionBddGUI.createEnchere(con, idObjet, main.getInfoSession().getCurrentUserId(), Float.valueOf(tCb.getText()), LocalDateTime.now());
-                this.refreshPage(main, mainEncheres, idObjet, nomObjet, petiteDescri, longueDescri, Float.valueOf(tCb.getText()));
-                
-            } catch (SQLException ex) {
-                Logger.getLogger(PageObjet.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        });
         
         bRefresh.setOnAction((t) -> {
             try {
@@ -155,7 +186,7 @@ public class PageObjet extends ScrollPane {
                 Logger.getLogger(PageObjet.class.getName()).log(Level.SEVERE, null, ex);
             }
             try {
-                this.refreshPage(main, mainEncheres, idObjet, nomObjet, petiteDescri, longueDescri, nouveauPrixActuel);
+                this.refreshPage(main, mainEncheres, idObjet, nomObjet, petiteDescri, longueDescri, nouveauPrixActuel,isUserSeller,fin);
             } catch (SQLException ex) {
                 Logger.getLogger(PageObjet.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -163,8 +194,7 @@ public class PageObjet extends ScrollPane {
     }
     
     public void refreshPage(VueMain main, BorderPane mainEncheres,int idObjet,String nomObjet,String petiteDescri,String longueDescri
-    ,float nouveauPrixActuel) throws SQLException{
-        
-        mainEncheres.setCenter(new PageObjet(main,mainEncheres,idObjet,nomObjet,petiteDescri,longueDescri,nouveauPrixActuel));
+    ,float nouveauPrixActuel,boolean isUserSeller,LocalDateTime ldtFin) throws SQLException{
+        mainEncheres.setCenter(new PageObjet(main,mainEncheres,idObjet,nomObjet,petiteDescri,longueDescri,nouveauPrixActuel,isUserSeller,ldtFin));
     }
 }
