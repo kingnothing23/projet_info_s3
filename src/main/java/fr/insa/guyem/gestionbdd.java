@@ -42,7 +42,7 @@ public class gestionbdd {
 
     public static Connection defautConnect()
             throws ClassNotFoundException, SQLException {
-        return connectGeneralPostGres("localhost", 5439, "postgres", "postgres", "pass");
+        return connectGeneralPostGres("localhost", 5439, "postgres", "postgres", "emgu7747");
     }
 
     public static void menu(Connection con) throws SQLException {
@@ -62,6 +62,10 @@ public class gestionbdd {
             System.out.println("10) ajouter une categorie");
             System.out.println("11) afficher les categories ");
             System.out.println("12) filtrer les objets par categorie");
+            System.out.println("13) rechercher par nom");
+             System.out.println("14) rechercher  mot clés");
+             System.out.println("15) rechercher par description");
+             System.out.println("16) filtrer par prix");
             System.out.println("0) quitter");
             System.out.println("Votre choix ?");
             rep = Lire.i();
@@ -132,7 +136,15 @@ public class gestionbdd {
                    if (Liste.size() != 0){
                    catsearch(con,Liste);}
                    
-                }          
+                }        else if (rep == 13) {
+                    research(con);
+                }    else if (rep == 14) {
+                    multisearch(con);
+                } else if (rep == 15) {
+                    searchdescri(con);
+                } else if (rep == 16) {
+                    filprice(con);
+                }
 
             } catch (SQLException ex) {
                 throw new Error(ex);
@@ -719,14 +731,14 @@ public class gestionbdd {
     private static void research(Connection con) throws SQLException {
         System.out.println("entrez le nom de  l'objet ");
         String nom = Lire.S();
-        ArrayList<Integer> result = new ArrayList<Integer>();
+       System.out.println("lol1");
         try ( Statement st = con.createStatement()) {
             String queryssg = """
-                                  select ido from objets where nom like '%
-                                  """ + nom + "%'";
-
+                                  select * from objets where nom like '%""" + nom + "%'";
+System.out.println(queryssg);
             try ( ResultSet tlu = st.executeQuery(queryssg)) {
                 while (tlu.next()) {
+                    System.out.println("lol");
                     int id = tlu.getInt("ido");
                     // ou par son numéro (la première colonne a le numéro 1)
                     String nomb = tlu.getString(2);
