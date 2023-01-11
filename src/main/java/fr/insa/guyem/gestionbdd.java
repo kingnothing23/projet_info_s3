@@ -651,7 +651,66 @@ public class gestionbdd {
             }
         }
     }
+ private static double Pri(Connection con, int obj) throws SQLException {
+      int yesin;
+        float actual;
+        try ( Statement st = con.createStatement()) {
+            String query = "select count(sur) from enchere where sur=" + obj;
+            try ( ResultSet tlu = st.executeQuery(query)) {
+                tlu.next();
+                yesin = tlu.getInt(1);
+            }
+        }
 
+        if (yesin == 0) {
+            try ( Statement st = con.createStatement()) {
+                String query = "select prixbase from objets where ido=" + obj;
+                try ( ResultSet tlu = st.executeQuery(query)) {
+                    
+                    tlu.next();
+                    actual = tlu.getFloat(1);
+                }
+            }
+
+        } else {
+
+//            try ( Statement st = con.createStatement()) {
+//                String query = "select max(montant) from enchere where enchere.sur=" + obj;
+//                try ( ResultSet tlu = st.executeQuery(query)) {
+//                    System.out.println("prix actuel :");
+//                    actual = tlu.getFloat(1);
+//
+//                    System.out.println(actual);
+//
+//                }
+//            }
+            try ( PreparedStatement st = con.prepareStatement("select max(montant) from enchere where enchere.sur=?")) {
+                st.setInt(1, obj);
+                try ( ResultSet tlu = st.executeQuery()) {
+                    
+                    tlu.next();
+                    actual = tlu.getFloat(1);
+
+                    System.out.println(actual);
+
+                }
+            }
+
+        }
+        return actual;
+     
+     
+     
+     
+     
+     
+ }
+    
+    
+    
+    
+    
+    
     private static double PriceActual(Connection con, int obj) throws SQLException {
         int yesin;
         float actual;
@@ -855,7 +914,7 @@ private static void catsearch(Connection con,ArrayList<Integer> liste) throws SQ
                     int id = tlu.getInt("ido");
                     System.out.println(id + " : " + nom + " prix(" + prixbase + ") vendeur :" + vendeur + " petite description : " + petitedescri + " ,longue description : " +
                             longuedescri +", debut de l'enchere :" + debut + ", fin de l'enchere :" + fin+"categorie"+ categorie);
-                         
+                   i=i+1 ;     
               }
              
          }
@@ -1104,9 +1163,9 @@ private static void Bilanutil(Connection con, int uti) throws SQLException {
             
             
         }
-       if (motcle.size()!= 0){
+       if (motcle.size()!= 0){ 
         String query = "select * from objets where";
-          query = query+ "longuedescri like '%"+motcle.get(0)+"%'";
+          query = query+ " longuedescri like '%"+motcle.get(0)+"%'";
        
           if(motcle.size()!= 1){
           for (int g = 1 ; g<motcle.size();g++){
@@ -1190,16 +1249,16 @@ private static void filprice(Connection con) throws SQLException{
         for(int i =0 ; i<objets.size();i++){
         int m = Integer.parseInt(objets.get(i).toString());
         
-            lol= PriceActual(con, m);
+            lol= Pri(con, m);
             if(min <=lol && lol<=max){
                 try ( Statement sts = con.createStatement()) {
                     String   querys = " select * from objets";
-                    try ( ResultSet tlu = st.executeQuery(query)) {
+                    try ( ResultSet tlu = st.executeQuery(querys)) {
           while(tlu.next()) {
             
               int id = tlu.getInt("ido");
                     // ou par son numéro (la première colonne a le numéro 1)
-                    String nom = tlu.getString(2);
+                   String nom = tlu.getString("nom");
                     String petitedescri = tlu.getString(3);
                     String longuedescri =tlu.getString(4);
                     String prixbase = tlu.getString(5);
@@ -1207,7 +1266,7 @@ private static void filprice(Connection con) throws SQLException{
                     String vendeur = tlu.getString(7);
                     String debut = tlu.getString(8);
                     String fin = tlu.getString(9);
-                    System.out.println(id + " : " + nom + " prix(" + prixbase + ") vendeur :" + vendeur + " petite description : " + petitedescri + " ,longue description : " +
+                    System.out.println(id + " : "  + " prix(" + prixbase + ") vendeur :" + vendeur + " petite description : " + petitedescri + " ,longue description : " +
                             longuedescri +", debut de l'enchere :" + debut + ", fin de l'enchere :" + fin);
               
           }
