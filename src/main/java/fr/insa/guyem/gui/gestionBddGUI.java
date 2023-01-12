@@ -18,18 +18,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.Month;
-import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -46,6 +45,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.util.Duration;
 import org.controlsfx.control.RangeSlider;
 
 /**
@@ -69,7 +69,7 @@ public class gestionBddGUI {
     //Permet de se connecter a la Bdd de base
     public static Connection defautConnect() 
             throws ClassNotFoundException, SQLException {
-        return connectGeneralPostGres("localhost", 5439, "postgres", "postgres", "emgu7747");
+        return connectGeneralPostGres("localhost", 5439, "postgres", "postgres", "pass");
     }
 
     //Permet de se connecter avec un utilisateur en utilisant le mdp et le mail, renvoi l'id de l'utilisateur
@@ -134,6 +134,9 @@ public class gestionBddGUI {
 
                 // ici, on veut lister toutes les lignes, d'où le while
                 ArrayList<Pane> listePane = new ArrayList<>();
+                ArrayList<Label> listeLabelInfo = new ArrayList<>();
+                ArrayList<String> listeFin = new ArrayList<>();
+                
                 while (tlu.next()) {
                     
                     int id = tlu.getInt("ido");
@@ -174,8 +177,11 @@ public class gestionBddGUI {
                     Label lMessagePrix = new Label("Enchère la plus haute\nactuellement :");
                     lPrix.setFont(Font.font("Montserra", FontWeight.EXTRA_BOLD, 26));
                     lMessagePrix.setFont(Font.font("Montserra", FontWeight.BOLD, 10));
-                    Label lInfoComp = new Label("Il reste\n"+gestionBddGUI.stringTempsRestant(convertStringToDateTime(fin)));
+                    Label lInfoComp = new Label("Il reste\n"+gestionBddGUI.stringTempsRestant(convertStringToDateTime(fin))+" \navant la fin de cette enchère");
                     lInfoComp.setFont(Font.font("Montserra", FontWeight.BOLD, 8));
+                    
+                    listeLabelInfo.add(lInfoComp);
+                    listeFin.add(fin);
                     
                     Label lCategorie = new Label ("Catégorie : "+gestionBddGUI.returnNomCategorieFromIdObjet(con, String.valueOf(String.valueOf(id))));
                     lCategorie.setFont(Font.font("Montserra", FontWeight.BOLD, 10));
@@ -235,7 +241,13 @@ public class gestionBddGUI {
                 scrollableOffers.setFitToHeight(true);  //permet de centrer le scrollpane
                 scrollableOffers.setFitToWidth(true);
                 mainEncheres.setCenter(scrollableOffers);
+                
+                
+                for (int i=0;i<listeLabelInfo.size();i++){
+                    refresh(convertStringToDateTime(listeFin.get(i)),listeLabelInfo.get(i),false);
+                }
             }
+            
         }
     }
 
@@ -243,6 +255,7 @@ public class gestionBddGUI {
     
     //Creation du bandeau utilisateur
     public static void bandeauUtilisateur (Connection con,VueMain main,BorderPane mainPage) throws SQLException{
+        
         //Def Boutons utilisateur
         Button bDeco = new Button("Se déconnecter");
         bDeco.setStyle("-fx-background-color: #E1341E");
@@ -647,6 +660,7 @@ public class gestionBddGUI {
                 vbHistorique.setSpacing(15);
                 vbContenuTitledPane.setSpacing(5);
                  // ici, on veut lister toutes les lignes, d'où le while
+                mainPage.setCenter(null);
                 while (tlu.next()) {
                     
                     Label lEncherePlusHaute=new Label();
@@ -828,8 +842,17 @@ public class gestionBddGUI {
         }
     }
     
+    public static void refresh(LocalDateTime fin, Label l,boolean isPageObjet) {
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), ev -> {
+            if (isPageObjet){
+                l.setText("Il reste "+gestionBddGUI.stringTempsRestant(fin) +" avant la fin de cette enchère");
+            }else{
+                l.setText("Il reste\n"+gestionBddGUI.stringTempsRestant(fin) +" \navant la fin de cette enchère");
+            }
+            
+        }));
+        timeline.setCycleCount(Animation.INDEFINITE);
+        timeline.play();
+    }
     
-    //Pas essentiel :
-    //image par objet ?
-    //roles des utilisateurs
 }
