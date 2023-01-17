@@ -23,6 +23,7 @@ public class Encheres extends BorderPane{
         
         //Affichage de tous les objets du site
         gestionBddGUI.tousLesObjets(con,this,main,Integer.toString(main.getInfoSession().getCurrentUserId()));
+        
     }
     
 }

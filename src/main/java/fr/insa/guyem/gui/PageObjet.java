@@ -76,8 +76,10 @@ public class PageObjet extends ScrollPane {
         lPrixActuel2.setFont(Font.font("Montserra",FontWeight.BOLD,16));
         Label lVotreEnchere = new Label ("Votre enchère est de "+gestionBddGUI.returnEnchereUtil(con,String.valueOf( main.getInfoSession().getCurrentUserId()),String.valueOf(idObjet), main)+" €");
         lVotreEnchere.setFont(Font.font("Montserra",FontWeight.BOLD,16));
-        Label lChrono =new Label("Il reste "+gestionBddGUI.stringTempsRestant(fin)+" avant la fin de cette enchère");
+        Label lChrono =new Label("Il reste "+gestionBddGUI.stringTempsRestant(fin)+ " avant la fin de cette enchère");
         lChrono.setFont(Font.font("Montserra",FontWeight.BOLD,16));
+        
+        gestionBddGUI.refresh(fin,lChrono,true);
         
         if(isUserSeller){
             if (isExpired){

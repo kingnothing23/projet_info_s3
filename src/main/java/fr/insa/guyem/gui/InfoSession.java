@@ -15,6 +15,7 @@ public class InfoSession {
     private Connection conBdd;
     private String currentUserName;
     
+    
     public void setConBdd(Connection conBdd){
         this.conBdd = conBdd;
     }

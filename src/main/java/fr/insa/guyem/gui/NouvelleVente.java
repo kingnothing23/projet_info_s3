@@ -17,7 +17,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -160,6 +159,7 @@ public class NouvelleVente extends ScrollPane{
                 }
             } catch (Exception ex) {
                 lErreurs.setText("Il y a une erreur dans les champs, veuillez modifier puis réessayer");
+                Logger.getLogger(NouvelleVente.class.getName()).log(Level.SEVERE, null, ex);
             }
            
         });
